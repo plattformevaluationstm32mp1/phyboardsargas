@@ -1,0 +1,92 @@
+/* USER CODE BEGIN Header */
+/**
+  @page ADC_SingleConversion_Polling ADC example
+  
+  @verbatim
+  ******************** (C) COPYRIGHT 2019 STMicroelectronics *******************
+  * @file    Examples/ADC/ADC_SingleConversion_Polling/readme.txt 
+  * @author  MCD Application Team
+  * @brief   Description of the ADC_SingleConversion_Polling example.
+  ******************************************************************************
+  *
+  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics. 
+  * All rights reserved.</center></h2>
+  *
+  * This software component is licensed by ST under BSD 3-Clause license,
+  * the "License"; You may not use this file except in compliance with the 
+  * License. You may obtain a copy of the License at:
+  *                       opensource.org/licenses/BSD-3-Clause
+  *
+  ******************************************************************************
+  @endverbatim
+
+@par Example Description
+Use ADC to convert a single channel in polling mode.
+
+Example configuration:
+ADC is configured to convert a single channel, in single conversion mode,
+from SW start.
+
+Example execution:
+From the start, the ADC converts the selected channel at each time the "S5" button is pressed.
+The phyCORE-STM32MP1 red LED toggles when the conversion if completed.
+
+For debug: variables to monitor with debugger watch window:
+ - "aADCxConvertedData": ADC regular conversion data
+ - "aADCxConvertedData_Voltage_mVolt": ADC conversion data computation to physical value
+
+Connection needed:
+None, if ADC channel and DAC channel are selected on the same GPIO.
+Otherwise, connect a wire between DAC channel output and ADC input.
+
+Other peripherals used:
+  1 GPIO for LED
+  1 GPIO for analog input: PA4
+  DAC
+  1 GPIO for DAC channel output PA4
+  1 GPIO for push button
+  DMA
+  Timer
+
+Board settings:
+ - ADC is configured to convert ADC2_CHANNEL_16 (PA4).
+ - The voltage input on ADC channel is provided from DAC (DAC_CHANNEL_1).
+   ADC input from pin PA4 and DAC ouput to pin PA4:
+   If same pin is used no connection is required, it is done internally. Otherwise, user need to connect a wire between ADC pin and DAC pin.
+ - Voltage is increasing at each click on "S5" push-button, from 0 to maximum range in 4 steps.
+   Clicks on "S5" push-button follow circular cycles: At clicks counter maximum value reached, counter is set back to 0.
+
+
+To observe voltage level applied on ADC channel through GPIO, connect a voltmeter on
+pin PA4 (No connector Access on this board).
+
+STM32MP157C-phyBOARD-Sargas board RED LED is used to monitor the program execution status:
+ - Normal operation: LED is turned-on/off in function after ADC conversion.
+ - Error: In case of error, LED is toggling twice at a frequency of 1Hz.
+
+@par Directory contents 
+
+  - ADC/ADC_SingleConversion_Polling/Inc/stm32mp1xx_it.h          Interrupt handlers header file
+  - ADC/ADC_SingleConversion_Polling/Inc/main.h                  Header for main.c module  
+  - ADC/ADC_SingleConversion_Polling/Src/stm32mp1xx_it.c          Interrupt handlers
+  - ADC/ADC_SingleConversion_Polling/Src/main.c                  Main program
+  - ADC/ADC_SingleConversion_Polling/Src/system_stm32mp1xx.c      STM32MP1xx system source file
+
+
+@par Hardware and Software environment
+
+  - This example runs on STM32MP15xx devices.
+    
+  - This example has been tested with STM32MP15-phyBOARD-Sargas board and can be
+    easily tailored to any other supported device and development board.
+
+
+@par How to use it ? 
+
+In order to make the program work, you must do the following :
+ - Open your preferred toolchain
+ - Rebuild all files and load your image into target memory
+ - Run the example
+
+ * <h3><center>&copy; COPYRIGHT STMicroelectronics</center></h3>
+ */
