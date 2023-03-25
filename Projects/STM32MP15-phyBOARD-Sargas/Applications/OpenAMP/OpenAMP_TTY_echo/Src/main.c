@@ -34,6 +34,12 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define TX_FAST_TIMEOUT 10
+#define RX_FAST_TIMEOUT 10
+#define FDCAN_TX_BUFFER0  ((uint32_t)0x00000001U) /*!< Add message to Tx Buffer 0  */
+#define FDCAN_TX_BUFFER1  ((uint32_t)0x00000002U) /*!< Add message to Tx Buffer 1  */
+#define FDCAN_TX_BUFFER2  ((uint32_t)0x00000004U) /*!< Add message to Tx Buffer 2  */
+
 #define MAX_BUFFER_SIZE RPMSG_BUFFER_SIZE
 /* USER CODE END PD */
 
@@ -44,10 +50,20 @@
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart3;
+FDCAN_HandleTypeDef hfdcan1;
 IPCC_HandleTypeDef hipcc;
 
 
 /* USER CODE BEGIN PV */
+FDCAN_FilterTypeDef sFilterConfig;
+FDCAN_TxHeaderTypeDef TxHeader;
+FDCAN_RxHeaderTypeDef RxHeader;
+uint8_t TxData0[] = {0x10, 0x32, 0x54, 0x76, 0x98, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+uint8_t TxData1[] = {0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55};
+uint8_t TxData2[] = {0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00};
+uint8_t RxData[12];
+
+
 VIRT_UART_HandleTypeDef huart0;
 VIRT_UART_HandleTypeDef huart1;
 
@@ -67,9 +83,12 @@ uint16_t TestMessageSize = sizeof(TestMessage);
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_FDCAN1_Init(void);
 static void MX_IPCC_Init(void);
 
 /* USER CODE BEGIN PFP */
+static uint32_t BufferCmp8b(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength);
+
 #ifdef __GNUC__
 /* With GCC, small printf (option LD Linker->Libraries->Small printf
    set to 'Yes') calls __io_putchar() */
@@ -98,6 +117,7 @@ void VIRT_UART1_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
   */
 int main(void)
 {
+	uint32_t Tickstart;
   /* USER CODE BEGIN 1 */
   unsigned int counter = 0;
 
@@ -108,6 +128,7 @@ int main(void)
   /* Reset of all peripherals, Initialize the Systick. */
   HAL_Init();
   MX_USART3_UART_Init();
+  MX_FDCAN1_Init();
 
   /* USER CODE BEGIN Init */
     if(IS_ENGINEERING_BOOT_MODE())
@@ -121,6 +142,10 @@ int main(void)
                                             ((HAL_GetHalVersion() >> 24) & 0x000000FF),
                                             ((HAL_GetHalVersion() >> 16) & 0x000000FF),
                                             ((HAL_GetHalVersion() >> 8) & 0x000000FF));
+
+
+
+
   BSP_LED_Init(LED1);
   BSP_LED_On(LED1);
   /* USER CODE END Init */
@@ -131,6 +156,179 @@ int main(void)
    MX_IPCC_Init();
   /* OpenAmp initialisation ---------------------------------*/
   MX_OPENAMP_Init(RPMSG_REMOTE, NULL);
+
+
+
+
+  /*##-1 Configure the FDCAN filters ########################################*/
+  /* Configure standard ID reception filter to Rx FIFO 0 */
+  sFilterConfig.IdType = FDCAN_STANDARD_ID;
+  sFilterConfig.FilterIndex = 0;
+  sFilterConfig.FilterType = FDCAN_FILTER_MASK;
+  sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+  sFilterConfig.FilterID1 = 0; //filter
+  sFilterConfig.FilterID2 = 0; //mask
+  if (HAL_FDCAN_ConfigFilter(&hfdcan1, &sFilterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* Configure extended ID reception filter to Rx FIFO 1 */
+  sFilterConfig.IdType = FDCAN_EXTENDED_ID;
+  sFilterConfig.FilterIndex = 0;
+  sFilterConfig.FilterType = FDCAN_FILTER_MASK;
+  sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO1;
+  sFilterConfig.FilterID1 = 0; //filter
+  sFilterConfig.FilterID2 = 0; //mask
+  if (HAL_FDCAN_ConfigFilter(&hfdcan1, &sFilterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /*##-2 Start FDCAN controller (continuous listening CAN bus) ##############*/
+  if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+
+
+
+  //for(int i=0; i<500;i++) {
+  while(1) {
+
+  /*##-3 Transmit messages ##################################################*/
+  /* Add message to Tx FIFO */
+  TxHeader.Identifier = 0x444;
+  TxHeader.IdType = FDCAN_STANDARD_ID;
+  TxHeader.TxFrameType = FDCAN_DATA_FRAME;
+  TxHeader.DataLength = FDCAN_DLC_BYTES_12;
+  TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+  TxHeader.BitRateSwitch = FDCAN_BRS_ON;
+  TxHeader.FDFormat = FDCAN_FD_CAN;
+  TxHeader.TxEventFifoControl = FDCAN_STORE_TX_EVENTS;
+  TxHeader.MessageMarker = 0x52;
+  if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* Add second message to Tx FIFO */
+  TxHeader.Identifier = 0x1111112;
+  TxHeader.IdType = FDCAN_EXTENDED_ID;
+  TxHeader.TxFrameType = FDCAN_DATA_FRAME;
+  TxHeader.DataLength = FDCAN_DLC_BYTES_12;
+  TxHeader.ErrorStateIndicator = FDCAN_ESI_PASSIVE;
+  TxHeader.BitRateSwitch = FDCAN_BRS_ON;
+  TxHeader.FDFormat = FDCAN_FD_CAN;
+  TxHeader.TxEventFifoControl = FDCAN_STORE_TX_EVENTS;
+  TxHeader.MessageMarker = 0xCC;
+  if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* Add third message to Tx FIFO */
+  TxHeader.Identifier = 0x1111113;
+  TxHeader.IdType = FDCAN_EXTENDED_ID;
+  TxHeader.TxFrameType = FDCAN_DATA_FRAME;
+  TxHeader.DataLength = FDCAN_DLC_BYTES_12;
+  TxHeader.ErrorStateIndicator = FDCAN_ESI_PASSIVE;
+  TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
+  TxHeader.FDFormat = FDCAN_FD_CAN;
+  TxHeader.TxEventFifoControl = FDCAN_STORE_TX_EVENTS;
+  TxHeader.MessageMarker = 0xDD;
+  if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* Get tick */
+  Tickstart = HAL_GetTick();
+
+  /* Check transmission occurred before timeout */
+  while(HAL_FDCAN_IsTxBufferMessagePending(&hfdcan1, FDCAN_TX_BUFFER0 | FDCAN_TX_BUFFER1 | FDCAN_TX_BUFFER2) != 0)
+  {
+    if((HAL_GetTick() - Tickstart) > TX_FAST_TIMEOUT)
+    {
+      Error_Handler();
+      break;
+    }
+  }
+
+  /*##-4 Receive messages ###################################################*/
+  /* Get tick */
+  Tickstart = HAL_GetTick();
+  /* Check one message is received in Rx FIFO 0 */
+  while(HAL_FDCAN_GetRxFifoFillLevel(&hfdcan1, FDCAN_RX_FIFO0) != 1)
+  {
+    if((HAL_GetTick() - Tickstart) > RX_FAST_TIMEOUT)
+    {
+      Error_Handler();
+      break;
+    }
+  }
+
+  /* Retrieve message from Rx FIFO 0 */
+  if (HAL_FDCAN_GetRxMessage(&hfdcan1, FDCAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* Compare payload to expected data */
+  if (BufferCmp8b(TxData0, RxData, 12) != 0)
+  {
+    Error_Handler();
+  }
+
+  /* Get tick */
+  Tickstart = HAL_GetTick();
+  /* Check two messages are received in Rx FIFO 1 */
+  while(HAL_FDCAN_GetRxFifoFillLevel(&hfdcan1, FDCAN_RX_FIFO1) != 2)
+  {
+    if((HAL_GetTick() - Tickstart) > RX_FAST_TIMEOUT)
+    {
+      Error_Handler();
+      break;
+    }
+  }
+
+  /* Retrieve message from Rx FIFO 1 */
+  if (HAL_FDCAN_GetRxMessage(&hfdcan1, FDCAN_RX_FIFO1, &RxHeader, RxData) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* Compare payload to expected data */
+  if (BufferCmp8b(TxData1, RxData, 12) != 0)
+  {
+    Error_Handler();
+  }
+
+  /* Retrieve next message from Rx FIFO 1 */
+  if (HAL_FDCAN_GetRxMessage(&hfdcan1, FDCAN_RX_FIFO1, &RxHeader, RxData) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* Compare payload to expected data */
+  if (BufferCmp8b(TxData2, RxData, 12) != 0)
+  {
+    Error_Handler();
+  }
+
+  BSP_LED_Toggle(LED1);
+  HAL_Delay(50);
+
+
+  }
+
+
+
+
+
+
+
 
   /* USER CODE BEGIN SysInit */
 
@@ -374,6 +572,73 @@ static void MX_USART3_UART_Init(void)
 }
 
 /**
+  * @brief FDCAN1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_FDCAN1_Init(void)
+{
+
+  /* USER CODE BEGIN FDCAN1_Init 0 */
+
+  /* USER CODE END FDCAN1_Init 0 */
+
+  /* USER CODE BEGIN FDCAN1_Init 1 */
+
+  /* USER CODE END FDCAN1_Init 1 */
+  hfdcan1.Instance = FDCAN2;
+  hfdcan1.Init.FrameFormat = FDCAN_FRAME_FD_NO_BRS;
+  hfdcan1.Init.Mode = FDCAN_MODE_EXTERNAL_LOOPBACK;
+  hfdcan1.Init.AutoRetransmission = ENABLE;
+  hfdcan1.Init.TransmitPause = DISABLE;
+  hfdcan1.Init.ProtocolException = ENABLE;
+	/* Bit time configuration:
+	 ************************
+            Bit time parameter         |   Nominal    |   Data
+            ---------------------------|--------------|--------------
+            fdcan_ker_ck               | 80 MHz       | 80 MHz
+            Time_quantum (tq)          | 12.5 ns      | 12.5 ns
+            Prescaler                  |  2           |  1
+            Synchronization_segment    |  1 tq        |  1 tq
+            Propagation_segment        | 19 tq        |  5 tq
+            Phase_segment_1            | 10 tq        |  2 tq
+            Phase_segment_2            | 10 tq        |  2 tq
+            Synchronization_Jump_width | 10 tq        |  2 tq
+            Bit_length                 | 80 tq = 1 µs |  10 tq = 0.125 µs
+            Bit_rate                   |  1 MBit/s    |  8 MBit/s
+	 */
+  hfdcan1.Init.NominalPrescaler = 3;//10;//0x2;
+  hfdcan1.Init.NominalSyncJumpWidth = 1;//0xA;
+  hfdcan1.Init.NominalTimeSeg1 = 5;//0x1D;
+  hfdcan1.Init.NominalTimeSeg2 = 2;//0xA;
+  hfdcan1.Init.DataPrescaler = 3;//10;//0x1;
+  hfdcan1.Init.DataSyncJumpWidth = 1;//0x2;
+  hfdcan1.Init.DataTimeSeg1 = 5;//0x7;
+  hfdcan1.Init.DataTimeSeg2 = 2;//0x2;
+  hfdcan1.Init.MessageRAMOffset = 0;
+  hfdcan1.Init.StdFiltersNbr = 1;
+  hfdcan1.Init.ExtFiltersNbr = 1;
+  hfdcan1.Init.RxFifo0ElmtsNbr = 8;
+  hfdcan1.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_12;
+  hfdcan1.Init.RxFifo1ElmtsNbr = 2;
+  hfdcan1.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_12;
+  hfdcan1.Init.RxBuffersNbr = 8;
+  hfdcan1.Init.RxBufferSize = FDCAN_DATA_BYTES_12;
+  hfdcan1.Init.TxEventsNbr = 2;
+  hfdcan1.Init.TxBuffersNbr = 8;
+  hfdcan1.Init.TxFifoQueueElmtsNbr = 8;
+  hfdcan1.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
+  hfdcan1.Init.TxElmtSize = FDCAN_DATA_BYTES_12;  if (HAL_FDCAN_Init(&hfdcan1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN FDCAN1_Init 2 */
+
+  /* USER CODE END FDCAN1_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -386,6 +651,32 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOZ_CLK_ENABLE();
+}
+
+/**
+  * @brief Compares two buffers.
+  * @par Input
+  *  - pBuffer1, pBuffer2: buffers to be compared.
+  *  - BufferLength: buffer's length
+  * @par Output
+  * None.
+  * @retval
+  *   0: pBuffer1 identical to pBuffer2
+  *   1: pBuffer1 differs from pBuffer2
+  */
+static uint32_t BufferCmp8b(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength)
+{
+  while(BufferLength--)
+  {
+    if(*pBuffer1 != *pBuffer2)
+    {
+      return 1;
+    }
+
+    pBuffer1++;
+    pBuffer2++;
+  }
+  return 0;
 }
 
 /**
