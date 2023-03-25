@@ -43,6 +43,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+UART_HandleTypeDef huart3;
 IPCC_HandleTypeDef hipcc;
 
 
@@ -57,12 +58,32 @@ uint16_t VirtUart0ChannelRxSize = 0;
 __IO FlagStatus VirtUart1RxMsg = RESET;
 uint8_t VirtUart1ChannelBuffRx[MAX_BUFFER_SIZE];
 uint16_t VirtUart1ChannelRxSize = 0;
+
+const uint8_t TestMessage[] = "      1         0.136 FB     0309 Rx 64 34 00 AA 2B FC A6 04 01 05 27 35 33 B3 3F 02 00 C0 3F CF CC CC 3F 9C 99 D9 3F 69 66 E6 3F 36 33 F3 3F 01 00 00 40 67 66 06 40 CD CC 0C 40 33 33 13 40 99 99 19 40 FF FF 1F 40 65 66 26 40 00 00 \n";
+uint16_t TestMessageSize = sizeof(TestMessage);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_USART3_UART_Init(void);
 static void MX_IPCC_Init(void);
+
 /* USER CODE BEGIN PFP */
+#ifdef __GNUC__
+/* With GCC, small printf (option LD Linker->Libraries->Small printf
+   set to 'Yes') calls __io_putchar() */
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
+
+#ifdef __GNUC__
+#define GETCHAR_PROTOTYPE int __io_getchar (void)
+#else
+#define GETCHAR_PROTOTYPE int fgetc(FILE * f)
+#endif /* __GNUC__ */
+
 void VIRT_UART0_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
 void VIRT_UART1_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
 /* USER CODE END PFP */
@@ -86,7 +107,7 @@ int main(void)
 
   /* Reset of all peripherals, Initialize the Systick. */
   HAL_Init();
-
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN Init */
     if(IS_ENGINEERING_BOOT_MODE())
   {
@@ -148,24 +169,39 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  // UART
+      HAL_Delay(50);
+      BSP_LED_Toggle(LED1);
+      printf("\r\n                ** Start Fast Toggle Test : see LED1!\r\n");
 
-    OPENAMP_check_for_message();
 
-    /* USER CODE END WHILE */
-    if (VirtUart0RxMsg) {
-      VirtUart0RxMsg = RESET;
-      VIRT_UART_Transmit(&huart0, VirtUart0ChannelBuffRx, VirtUart0ChannelRxSize);
-    }
 
-    if (VirtUart1RxMsg) {
-      VirtUart1RxMsg = RESET;
-      VIRT_UART_Transmit(&huart1, VirtUart1ChannelBuffRx, VirtUart1ChannelRxSize);
-    }
-
-    if(counter++ == 500000) {
-        BSP_LED_Toggle(LED1);
-        counter = 0;
-    }
+//    OPENAMP_check_for_message();
+//
+//    /* USER CODE END WHILE */
+//    if (VirtUart0RxMsg) {
+//      VirtUart0RxMsg = RESET;
+//      VIRT_UART_Transmit(&huart0, VirtUart0ChannelBuffRx, VirtUart0ChannelRxSize);
+//    }
+//
+//    if (VirtUart1RxMsg) {
+//      VirtUart1RxMsg = RESET;
+//      VIRT_UART_Transmit(&huart1, VirtUart1ChannelBuffRx, VirtUart1ChannelRxSize);
+//    }
+//
+//
+//
+//
+//    if(counter++ == 50000) {
+//        BSP_LED_Toggle(LED1);
+//        counter = 0;
+//
+//		if (VIRT_UART_Transmit(&huart1, TestMessage, TestMessageSize) != VIRT_UART_OK) {
+//			BSP_LED_On(LED2);
+//		} else  {
+//			BSP_LED_Off(LED2);
+//		}
+//    }
 
     /* USER CODE BEGIN 3 */
   }
@@ -287,6 +323,70 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 921600;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_8;
+  huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart3.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&huart3, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&huart3, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_DisableFifoMode(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOZ_CLK_ENABLE();
+}
+
+/**
   * @brief IPPC Initialization Function
   * @param None
   * @retval None
@@ -302,6 +402,57 @@ static void MX_IPCC_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+int Serial_Scanf(char *ptr, int len)
+{
+
+  int DataIdx = 0;
+  uint8_t thechar;
+  thechar= ' ';
+  while(thechar!= '\n' && thechar != '\r' && DataIdx<len)
+  {
+#ifdef __GNUC__
+    thechar = __io_getchar();
+
+#else
+    thechar = fgetc(NULL);
+#endif
+  if ( thechar  >= 0xFF)
+  {
+    printf("\n\r  !!! Please enter a valid ASCII character \n");
+    return 0xFF;
+  }
+  *ptr++ =thechar;
+  DataIdx+=1;
+  }
+  return DataIdx;
+}
+/**
+  * @brief  Retargets the C library printf function to the USART.
+  * @param  None
+  * @retval None
+  */
+PUTCHAR_PROTOTYPE
+{
+  /* Place your implementation of fputc here */
+  /* e.g. write a character to the USART3 and Loop until the end of transmission */
+  HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 0xFFFF);
+
+  return ch;
+}
+
+
+GETCHAR_PROTOTYPE
+{
+  uint8_t ch = 0;
+  /* Clear the Overrun flag just before receiving the first character */
+  __HAL_UART_CLEAR_OREFLAG(&huart3);
+
+  HAL_UART_Receive(&huart3, (uint8_t *)&ch, 1, 0xFFFF);
+  HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 0xFFFF);
+  return ch;
+}
+
 void VIRT_UART0_RxCpltCallback(VIRT_UART_HandleTypeDef *huart)
 {
 
