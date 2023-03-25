@@ -191,7 +191,38 @@ int main(void)
     Error_Handler();
   }
 
+  /* USER CODE BEGIN SysInit */
 
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+
+  /* USER CODE BEGIN 2 */
+  /*
+   * Create Virtual UART device
+   * defined by a rpmsg channel attached to the remote device
+   */
+  log_info("Virtual UART0 OpenAMP-rpmsg channel creation\r\n");
+  if (VIRT_UART_Init(&huart0) != VIRT_UART_OK) {
+    log_err("VIRT_UART_Init UART0 failed.\r\n");
+    Error_Handler();
+  }
+
+  log_info("Virtual UART1 OpenAMP-rpmsg channel creation\r\n");
+  if (VIRT_UART_Init(&huart1) != VIRT_UART_OK) {
+    log_err("VIRT_UART_Init UART1 failed.\r\n");
+    Error_Handler();
+  }
+
+  /*Need to register callback for message reception by channels*/
+  if(VIRT_UART_RegisterCallback(&huart0, VIRT_UART_RXCPLT_CB_ID, VIRT_UART0_RxCpltCallback) != VIRT_UART_OK)
+  {
+   Error_Handler();
+  }
+  if(VIRT_UART_RegisterCallback(&huart1, VIRT_UART_RXCPLT_CB_ID, VIRT_UART1_RxCpltCallback) != VIRT_UART_OK)
+  {
+    Error_Handler();
+  }
 
 
   //for(int i=0; i<500;i++) {
@@ -321,7 +352,7 @@ int main(void)
   HAL_Delay(50);
 
 
-  }
+//  }
 
 
 
@@ -330,44 +361,13 @@ int main(void)
 
 
 
-  /* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-
-  /* USER CODE BEGIN 2 */
-  /*
-   * Create Virtual UART device
-   * defined by a rpmsg channel attached to the remote device
-   */
-  log_info("Virtual UART0 OpenAMP-rpmsg channel creation\r\n");
-  if (VIRT_UART_Init(&huart0) != VIRT_UART_OK) {
-    log_err("VIRT_UART_Init UART0 failed.\r\n");
-    Error_Handler();
-  }
-
-  log_info("Virtual UART1 OpenAMP-rpmsg channel creation\r\n");
-  if (VIRT_UART_Init(&huart1) != VIRT_UART_OK) {
-    log_err("VIRT_UART_Init UART1 failed.\r\n");
-    Error_Handler();
-  }
-
-  /*Need to register callback for message reception by channels*/
-  if(VIRT_UART_RegisterCallback(&huart0, VIRT_UART_RXCPLT_CB_ID, VIRT_UART0_RxCpltCallback) != VIRT_UART_OK)
-  {
-   Error_Handler();
-  }
-  if(VIRT_UART_RegisterCallback(&huart1, VIRT_UART_RXCPLT_CB_ID, VIRT_UART1_RxCpltCallback) != VIRT_UART_OK)
-  {
-    Error_Handler();
-  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {		//
+//  while (1)
+ // {		//
 	 // UART
   //    HAL_Delay(50);
    //   BSP_LED_Toggle(LED1);
@@ -391,7 +391,7 @@ int main(void)
 
 
 
-    if(counter++ == 50000) {
+  //  if(counter++ == 50000) {
         BSP_LED_Toggle(LED1);
         counter = 0;
 
@@ -401,7 +401,7 @@ int main(void)
 			BSP_LED_Off(LED2);
 		}
 	     printf("\r\n                ** Start Fast Toggle Test : see LED1!\r\n");
-    }
+ //   }
 
     /* USER CODE BEGIN 3 */
   }
