@@ -108,6 +108,7 @@ int main(void)
   /* Reset of all peripherals, Initialize the Systick. */
   HAL_Init();
   MX_USART3_UART_Init();
+
   /* USER CODE BEGIN Init */
     if(IS_ENGINEERING_BOOT_MODE())
   {
@@ -168,40 +169,41 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
-  {
-	  // UART
-      HAL_Delay(50);
-      BSP_LED_Toggle(LED1);
-      printf("\r\n                ** Start Fast Toggle Test : see LED1!\r\n");
+  {		//
+	 // UART
+  //    HAL_Delay(50);
+   //   BSP_LED_Toggle(LED1);
+   //  printf("\r\n                ** Start Fast Toggle Test : see LED1!\r\n");
 
 
 
-//    OPENAMP_check_for_message();
-//
-//    /* USER CODE END WHILE */
-//    if (VirtUart0RxMsg) {
-//      VirtUart0RxMsg = RESET;
-//      VIRT_UART_Transmit(&huart0, VirtUart0ChannelBuffRx, VirtUart0ChannelRxSize);
-//    }
-//
-//    if (VirtUart1RxMsg) {
-//      VirtUart1RxMsg = RESET;
-//      VIRT_UART_Transmit(&huart1, VirtUart1ChannelBuffRx, VirtUart1ChannelRxSize);
-//    }
-//
-//
-//
-//
-//    if(counter++ == 50000) {
-//        BSP_LED_Toggle(LED1);
-//        counter = 0;
-//
-//		if (VIRT_UART_Transmit(&huart1, TestMessage, TestMessageSize) != VIRT_UART_OK) {
-//			BSP_LED_On(LED2);
-//		} else  {
-//			BSP_LED_Off(LED2);
-//		}
-//    }
+    OPENAMP_check_for_message();
+
+    /* USER CODE END WHILE */
+    if (VirtUart0RxMsg) {
+      VirtUart0RxMsg = RESET;
+      VIRT_UART_Transmit(&huart0, VirtUart0ChannelBuffRx, VirtUart0ChannelRxSize);
+    }
+
+    if (VirtUart1RxMsg) {
+      VirtUart1RxMsg = RESET;
+      VIRT_UART_Transmit(&huart1, VirtUart1ChannelBuffRx, VirtUart1ChannelRxSize);
+    }
+
+
+
+
+    if(counter++ == 50000) {
+        BSP_LED_Toggle(LED1);
+        counter = 0;
+
+		if (VIRT_UART_Transmit(&huart1, TestMessage, TestMessageSize) != VIRT_UART_OK) {
+			BSP_LED_On(LED2);
+		} else  {
+			BSP_LED_Off(LED2);
+		}
+	     printf("\r\n                ** Start Fast Toggle Test : see LED1!\r\n");
+    }
 
     /* USER CODE BEGIN 3 */
   }
