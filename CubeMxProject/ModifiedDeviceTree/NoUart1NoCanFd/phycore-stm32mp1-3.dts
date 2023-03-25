@@ -2958,6 +2958,75 @@
 				};
 			};
 
+			usart3-0 {
+				phandle = <0x10>;
+
+				pins1 {
+					pinmux = <0x1a08>;
+					bias-disable;
+					drive-push-pull;
+					slew-rate = <0x00>;
+				};
+
+				pins2 {
+					pinmux = <0x1c09>;
+					bias-disable;
+				};
+			};
+
+			usart3-idle-0 {
+				phandle = <0x12>;
+
+				pins1 {
+					pinmux = <0x1a11>;
+				};
+
+				pins2 {
+					pinmux = <0x1c09>;
+					bias-disable;
+				};
+			};
+
+			usart3-sleep-0 {
+				phandle = <0x11>;
+
+				pins {
+					pinmux = <0x1a11 0x1c11>;
+				};
+			};
+
+			usart3-1 {
+				phandle = <0xf4>;
+
+				pins1 {
+					pinmux = <0x6809>;
+					bias-disable;
+					drive-push-pull;
+					slew-rate = <0x00>;
+				};
+
+				pins2 {
+					pinmux = <0x1d08>;
+					bias-disable;
+				};
+			};
+
+			usart3-idle-1 {
+				phandle = <0xf5>;
+
+				pins1 {
+					pinmux = <0x6811 0x1d08>;
+				};
+			};
+
+			usart3-sleep-1 {
+				phandle = <0xf6>;
+
+				pins {
+					pinmux = <0x6811 0x1d11>;
+				};
+			};
+
 			usbotg_hs-0 {
 				phandle = <0xf7>;
 
