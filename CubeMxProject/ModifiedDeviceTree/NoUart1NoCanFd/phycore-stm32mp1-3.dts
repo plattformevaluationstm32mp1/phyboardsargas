@@ -2710,30 +2710,6 @@
 				};
 			};
 
-			m-can1-0 {
-				phandle = <0x63>;
-
-				pins1 {
-					pinmux = <0x1d0a>;
-					slew-rate = <0x00>;
-					drive-push-pull;
-					bias-disable;
-				};
-
-				pins2 {
-					pinmux = <0x150a>;
-					bias-disable;
-				};
-			};
-
-			m_can2-sleep@0 {
-				phandle = <0x64>;
-
-				pins {
-					pinmux = <0x1d11 0x1511>;
-				};
-			};
-
 			pwm5-0 {
 				phandle = <0xed>;
 
@@ -2982,75 +2958,6 @@
 				};
 			};
 
-			usart3-0 {
-				phandle = <0x10>;
-
-				pins1 {
-					pinmux = <0x1a08>;
-					bias-disable;
-					drive-push-pull;
-					slew-rate = <0x00>;
-				};
-
-				pins2 {
-					pinmux = <0x1c09>;
-					bias-disable;
-				};
-			};
-
-			usart3-idle-0 {
-				phandle = <0x12>;
-
-				pins1 {
-					pinmux = <0x1a11>;
-				};
-
-				pins2 {
-					pinmux = <0x1c09>;
-					bias-disable;
-				};
-			};
-
-			usart3-sleep-0 {
-				phandle = <0x11>;
-
-				pins {
-					pinmux = <0x1a11 0x1c11>;
-				};
-			};
-
-			usart3-1 {
-				phandle = <0xf4>;
-
-				pins1 {
-					pinmux = <0x6809>;
-					bias-disable;
-					drive-push-pull;
-					slew-rate = <0x00>;
-				};
-
-				pins2 {
-					pinmux = <0x1d08>;
-					bias-disable;
-				};
-			};
-
-			usart3-idle-1 {
-				phandle = <0xf5>;
-
-				pins1 {
-					pinmux = <0x6811 0x1d08>;
-				};
-			};
-
-			usart3-sleep-1 {
-				phandle = <0xf6>;
-
-				pins {
-					pinmux = <0x6811 0x1d11>;
-				};
-			};
-
 			usbotg_hs-0 {
 				phandle = <0xf7>;
 
@@ -3209,10 +3116,7 @@
 			clocks = <0x01 0x00 0x0c 0x9d>;
 			clock-names = "hclk\0cclk";
 			bosch,mram-cfg = <0x1400 0x00 0x00 0x20 0x00 0x00 0x02 0x02>;
-			status = "okay";
-			pinctrl-names = "default\0sleep";
-			pinctrl-0 = <0x63>;
-			pinctrl-1 = <0x64>;
+			status = "disabled";
 			phandle = <0xf9>;
 		};
 
@@ -3988,7 +3892,7 @@
 		regulator-max-microvolt = <0x325aa0>;
 		gpio = <0x4d 0x01 0x00>;
 		regulator-always-on;
-		status = "okay";
+		status = "disabled";
 		phandle = <0x13f>;
 	};
 
@@ -4200,8 +4104,6 @@
 		i2c1_pins_sleep_a = "/soc/pin-controller@50002000/i2c1-1";
 		ltdc_pins_a = "/soc/pin-controller@50002000/ltdc-a-0";
 		ltdc_pins_sleep_a = "/soc/pin-controller@50002000/ltdc-a-1";
-		m_can2_pins_a = "/soc/pin-controller@50002000/m-can1-0";
-		m_can2_sleep_pins_a = "/soc/pin-controller@50002000/m_can2-sleep@0";
 		pwm5_pins_a = "/soc/pin-controller@50002000/pwm5-0";
 		pwm5_sleep_pins_a = "/soc/pin-controller@50002000/pwm5-sleep-0";
 		sai2a_pins_b = "/soc/pin-controller@50002000/sai2a-2";
