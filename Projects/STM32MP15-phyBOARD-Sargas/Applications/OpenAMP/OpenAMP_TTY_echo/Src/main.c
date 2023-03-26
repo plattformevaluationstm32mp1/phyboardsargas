@@ -36,24 +36,23 @@
 
 
 /* Private define ------------------------------------------------------------*/
-#define FDCAN_TX_BUFFER0  ((uint32_t)0x00000001U) /*!< Add message to Tx Buffer 0  */
-#define FDCAN_TX_BUFFER1  ((uint32_t)0x00000002U) /*!< Add message to Tx Buffer 1  */
-#define FDCAN_TX_BUFFER2  ((uint32_t)0x00000004U) /*!< Add message to Tx Buffer 2  */
-
 #define MAX_BUFFER_SIZE RPMSG_BUFFER_SIZE
 
 
 /* Private macro -------------------------------------------------------------*/
 
 
+/* Private const -------------------------------------------------------------*/
+const char m_szCMD_START[] = "start";
+const char m_szCMD_STOPT[] = "stop";
 
 
 /* Private variables ---------------------------------------------------------*/
-FDCAN_TxHeaderTypeDef TxHeader;
-FDCAN_RxHeaderTypeDef RxHeader;
+//FDCAN_TxHeaderTypeDef TxHeader;
+FDCAN_RxHeaderTypeDef m_stRxHeader;
 
-uint8_t RxData[64];
-uint8_t CanFdTrace[235]; //--> remove last only 0 termination for printf --> do not use printf use uart send
+uint8_t m_au8RxData[64];
+uint8_t m_au8CanFdTrace[235]; //--> remove last only 0 termination for printf --> do not use printf use uart send
 
 VIRT_UART_HandleTypeDef huart0;
 VIRT_UART_HandleTypeDef huart1;
@@ -68,9 +67,7 @@ uint16_t VirtUart1ChannelRxSize = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-
-
-
+void CreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[64], uint8_t au8TraceData[234]);
 
 #ifdef __GNUC__
 /* With GCC, small printf (option LD Linker->Libraries->Small printf
@@ -135,14 +132,12 @@ void CreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, u
 			au8TraceData[i] = 32;
 		}
 	}
-
 }
 
 
 
 /* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-/* USER CODE END 0 */
+
 
 /**
   * @brief  The application entry point.
@@ -150,11 +145,8 @@ void CreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, u
   */
 int main(void)
 {
-	uint32_t Tickstart;
-  /* USER CODE BEGIN 1 */
+	uint32_t u32Tickstart;
 
-
-  /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -231,30 +223,26 @@ int main(void)
 
   uint32_t u32RxCount = 0;
   while(1) {
-    Tickstart = HAL_GetTick();
+    u32Tickstart = HAL_GetTick();
     if (HAL_FDCAN_GetRxFifoFillLevel(&hfdcan2, FDCAN_RX_FIFO0) != 0)
     {
     	BSP_LED_On(LED_GREEN);
     	u32RxCount++;
       	/* Retrieve message from Rx FIFO 0 */
-    	memset(RxData, 0, sizeof(RxData));
-    	memset(CanFdTrace, 0, sizeof(CanFdTrace));
+    	memset(m_au8RxData, 0u, sizeof(m_au8RxData));
+    	memset(m_au8CanFdTrace, 0u, sizeof(m_au8CanFdTrace));
 
+      	if (HAL_FDCAN_GetRxMessage(&hfdcan2, FDCAN_RX_FIFO0, &m_stRxHeader, m_au8RxData) == HAL_OK) {
+      		CreateCanFdTrace(&m_stRxHeader, u32RxCount, m_au8RxData, m_au8CanFdTrace);
+  			printf(m_au8CanFdTrace);
 
-      	if (HAL_FDCAN_GetRxMessage(&hfdcan2, FDCAN_RX_FIFO0, &RxHeader, RxData) == HAL_OK)
-      	{
-      		CreateCanFdTrace(&RxHeader, u32RxCount, RxData, CanFdTrace);
-  			printf(CanFdTrace);
-
-
-  		    if (VIRT_UART_Transmit(&huart1, CanFdTrace, 234) != VIRT_UART_OK) {
+  		    if (VIRT_UART_Transmit(&huart1, m_au8CanFdTrace, 234) != VIRT_UART_OK) {
   				BSP_LED_On(LED_RED);
   				} else  {
   				BSP_LED_Off(LED_RED);
   		    }
       	} else {
 
-      		//printf("Nothing \r\n");
       	}
   	}
 	BSP_LED_Off(LED_GREEN);
