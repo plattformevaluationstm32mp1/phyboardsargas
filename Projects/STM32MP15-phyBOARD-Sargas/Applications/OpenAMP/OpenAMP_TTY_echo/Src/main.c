@@ -97,10 +97,10 @@ void CreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, u
 	/*Message number: start at position 0, right align, max. 7 places*/
 	snprintf((void*)&(au8TraceData[0]), 8, "%07u", u32RxCount);
 
-	/*TimeOffset[ms]: start at position 8, right align, max. 13 places*/
+	/*TimeOffset[ms]: start at position 8, right align, max. 9 places for [s] max 3 places for [ms]*/
 	uint32_t u32Timestamp1s = pstRxHeader->RxTimestamp / 1000u;
 	uint32_t u32Timestamp1ms = pstRxHeader->RxTimestamp % 1000u;
-	snprintf((void*)&(au8TraceData[8]), 10, "%013u", u32Timestamp1s);
+	snprintf((void*)&(au8TraceData[8]), 10, "%09u", u32Timestamp1s);
 	au8TraceData[17] = '.';
 	snprintf((void*)&(au8TraceData[18]), 4, "%03u", u32Timestamp1ms);
 
@@ -233,6 +233,9 @@ int main(void)
     	memset(m_au8CanFdTrace, 0u, sizeof(m_au8CanFdTrace));
 
       	if (HAL_FDCAN_GetRxMessage(&hfdcan2, FDCAN_RX_FIFO0, &m_stRxHeader, m_au8RxData) == HAL_OK) {
+
+
+      		m_stRxHeader.RxTimestamp = HAL_GetTick();
       		CreateCanFdTrace(&m_stRxHeader, u32RxCount, m_au8RxData, m_au8CanFdTrace);
   			printf(m_au8CanFdTrace);
 
