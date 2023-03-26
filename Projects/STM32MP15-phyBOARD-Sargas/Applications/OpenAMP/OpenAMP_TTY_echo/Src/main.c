@@ -92,32 +92,13 @@ void VIRT_UART1_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void CreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[64], uint8_t au8TraceData[234]) {
 	memset(au8TraceData, 32, 234);
 	au8TraceData[233] = '\r';
 	au8TraceData[232] = '\n';
 
-
-
 	/*Message number: start at position 0, right align, max. 7 places*/
 	snprintf((void*)&(au8TraceData[0]), 8, "%07u", u32RxCount);
-
 
 	/*TimeOffset[ms]: start at position 8, right align, max. 13 places*/
 	uint32_t u32Timestamp1s = pstRxHeader->RxTimestamp / 1000u;
@@ -125,8 +106,6 @@ void CreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, u
 	snprintf((void*)&(au8TraceData[8]), 10, "%013u", u32Timestamp1s);
 	au8TraceData[17] = '.';
 	snprintf((void*)&(au8TraceData[18]), 4, "%03u", u32Timestamp1ms);
-
-
 
 	/*Type:  start at position 22, 2 places */
 	snprintf((void*)&(au8TraceData[22]), 3, "%s", "FB");
@@ -155,15 +134,9 @@ void CreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, u
 		if(au8TraceData[i] == 0x00) {
 			au8TraceData[i] = 32;
 		}
-
 	}
 
-
-
 }
-
-
-
 
 
 
