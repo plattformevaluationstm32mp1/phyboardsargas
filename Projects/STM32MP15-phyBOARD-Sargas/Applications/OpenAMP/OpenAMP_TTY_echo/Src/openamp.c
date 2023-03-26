@@ -1,21 +1,22 @@
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file   openamp.c
   * @author  MCD Application Team
   * @brief  Code for openamp applications
   ******************************************************************************
-  * @attention
+   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics. 
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the 
-  * License. You may obtain a copy of the License at:
-  *                       opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
+/* USER CODE END Header */
 
 #include "openamp.h"
 #include "rsc_table.h"
@@ -26,7 +27,6 @@
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
-
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN Define */
@@ -40,7 +40,6 @@
 
 /* USER CODE END PM */
 
-
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
@@ -51,7 +50,6 @@ static struct metal_io_region *rsc_io;
 static struct shared_resource_table *rsc_table;
 static struct rpmsg_virtio_shm_pool shpool;
 static struct rpmsg_virtio_device rvdev;
-
 
 static metal_phys_addr_t shm_physmap;
 
@@ -79,7 +77,6 @@ static int OPENAMP_shmem_init(int RPMsgRole)
   struct metal_init_params metal_params = METAL_INIT_DEFAULTS;
   void* rsc_tab_addr = NULL;
   int rsc_size = 0;
-
 
   /* USER CODE BEGIN PRE_LIB_METAL_INIT */
 
@@ -147,7 +144,6 @@ int MX_OPENAMP_Init(int RPMsgRole, rpmsg_ns_bind_cb ns_bind_cb)
   struct virtio_device *vdev = NULL;
   int status = 0;
 
-
   /* USER CODE BEGIN MAILBOX_Init */
 
   /* USER CODE END MAIL_BOX_Init */
@@ -171,7 +167,6 @@ int MX_OPENAMP_Init(int RPMsgRole, rpmsg_ns_bind_cb ns_bind_cb)
     return -1;
   }
 
-
   rproc_virtio_wait_remote_ready(vdev);
 
   /* USER CODE BEGIN  POST_VIRTIO_INIT */
@@ -185,7 +180,6 @@ int MX_OPENAMP_Init(int RPMsgRole, rpmsg_ns_bind_cb ns_bind_cb)
   {
     return status;
   }
-
 
   /* USER CODE BEGIN  POST_VRING0_INIT */
 
@@ -274,5 +268,3 @@ void OPENAMP_Wait_EndPointready(struct rpmsg_endpoint *rp_ept)
     /* USER CODE END 1 */
   }
 }
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
