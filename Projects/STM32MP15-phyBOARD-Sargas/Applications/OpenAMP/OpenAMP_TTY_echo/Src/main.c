@@ -21,8 +21,12 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "usart.h"
+//#include "dma.h"
 #include "fdcan.h"
+#include "ipcc.h"
+//#include "openamp.h"
+#include "usart.h"
+#include "gpio.h"
 #include "LxUtilities.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -52,10 +56,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-//UART_HandleTypeDef huart3;
-//FDCAN_HandleTypeDef hfdcan1;
-IPCC_HandleTypeDef hipcc;
-
 
 /* USER CODE BEGIN PV */
 FDCAN_FilterTypeDef sFilterConfig;
@@ -84,10 +84,6 @@ uint16_t TestMessageSize = sizeof(TestMessage);
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-//static void MX_USART3_UART_Init(void);
-//static void MX_FDCAN2_Init(void);
-static void MX_IPCC_Init(void);
 
 /* USER CODE BEGIN PFP */
 static uint32_t BufferCmp8b(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength);
@@ -131,11 +127,10 @@ int main(void)
 
   /* Reset of all peripherals, Initialize the Systick. */
   HAL_Init();
-  MX_USART3_UART_Init();
-  MX_FDCAN2_Init();
+
 
   /* USER CODE BEGIN Init */
-    if(IS_ENGINEERING_BOOT_MODE())
+  if(IS_ENGINEERING_BOOT_MODE())
   {
     /* Configure the system clock */
     HAL_RCC_DeInit();
@@ -148,7 +143,8 @@ int main(void)
                                             ((HAL_GetHalVersion() >> 8) & 0x000000FF));
 
 
-
+  MX_USART3_UART_Init();
+  MX_FDCAN2_Init();
 
   BSP_LED_Init(LED1);
   BSP_LED_Init(LED2);
@@ -164,32 +160,6 @@ int main(void)
   MX_OPENAMP_Init(RPMSG_REMOTE, NULL);
 
 
-
-
-  /*##-1 Configure the FDCAN filters ########################################*/
-  /* Configure standard ID reception filter to Rx FIFO 0 */
-//  sFilterConfig.IdType = FDCAN_STANDARD_ID;
-//  sFilterConfig.FilterIndex = 0;
-//  sFilterConfig.FilterType = FDCAN_FILTER_MASK;
-//  sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-//  sFilterConfig.FilterID1 = 0; //filter
-//  sFilterConfig.FilterID2 = 0; //mask
-//  if (HAL_FDCAN_ConfigFilter(&hfdcan1, &sFilterConfig) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-
-//  /* Configure extended ID reception filter to Rx FIFO 1 */
-//  sFilterConfig.IdType = FDCAN_EXTENDED_ID;
-//  sFilterConfig.FilterIndex = 0;
-//  sFilterConfig.FilterType = FDCAN_FILTER_MASK;
-//  sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO1;
-//  sFilterConfig.FilterID1 = 0; //filter
-//  sFilterConfig.FilterID2 = 0; //mask
-//  if (HAL_FDCAN_ConfigFilter(&hfdcan1, &sFilterConfig) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
 
   /*##-2 Start FDCAN controller (continuous listening CAN bus) ##############*/
   if (HAL_FDCAN_Start(&hfdcan2) != HAL_OK)
@@ -427,25 +397,6 @@ int main(void)
 
 
 
-
-
-
-
-
-
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-//  while (1)
- // {		//
-	 // UART
-  //    HAL_Delay(50);
-   //   BSP_LED_Toggle(LED1);
-   //  printf("\r\n                ** Start Fast Toggle Test : see LED1!\r\n");
-
-
-
     OPENAMP_check_for_message();
 
     /* USER CODE END WHILE */
@@ -588,132 +539,22 @@ void SystemClock_Config(void)
   __HAL_RCC_RTC_HSEDIV(24);
 }
 
-
-/**
-  * @brief FDCAN1 Initialization Function
-  * @param None
-  * @retval None
-  */
-//static void MX_FDCAN1_Init(void)
+///**
+//  * @brief GPIO Initialization Function
+//  * @param None
+//  * @retval None
+//  */
+//static void MX_GPIO_Init(void)
 //{
 //
-//  /* USER CODE BEGIN FDCAN1_Init 0 */
-//
-//  /* USER CODE END FDCAN1_Init 0 */
-//
-//  /* USER CODE BEGIN FDCAN1_Init 1 */
-//
-//  /* USER CODE END FDCAN1_Init 1 */
-//  hfdcan1.Instance = FDCAN2;
-//  hfdcan1.Init.FrameFormat = FDCAN_FRAME_FD_NO_BRS;
-//  hfdcan1.Init.Mode = FDCAN_MODE_NORMAL;
-//  hfdcan1.Init.AutoRetransmission = ENABLE;
-//  hfdcan1.Init.TransmitPause = DISABLE;
-//  hfdcan1.Init.ProtocolException = ENABLE;
-//	/* Bit time configuration:
-//	 ************************
-//            Bit time parameter         |   Nominal    |   Data
-//            ---------------------------|--------------|--------------
-//            fdcan_ker_ck               | 80 MHz       | 80 MHz
-//            Time_quantum (tq)          | 12.5 ns      | 12.5 ns
-//            Prescaler                  |  2           |  1
-//            Synchronization_segment    |  1 tq        |  1 tq
-//            Propagation_segment        | 19 tq        |  5 tq
-//            Phase_segment_1            | 10 tq        |  2 tq
-//            Phase_segment_2            | 10 tq        |  2 tq
-//            Synchronization_Jump_width | 10 tq        |  2 tq
-//            Bit_length                 | 80 tq = 1 µs |  10 tq = 0.125 µs
-//            Bit_rate                   |  1 MBit/s    |  8 MBit/s
-//	 */
-//
-//  //setup for 24Mhz Clock nominal 1Mhz, Data: 1Mhz
-//  hfdcan1.Init.NominalPrescaler = 3;//10;//0x2;
-//  hfdcan1.Init.NominalSyncJumpWidth = 1;//0xA;
-//  hfdcan1.Init.NominalTimeSeg1 = 5;//0x1D;
-//  hfdcan1.Init.NominalTimeSeg2 = 2;//0xA;
-//  hfdcan1.Init.DataPrescaler = 3;//10;//0x1;
-//  hfdcan1.Init.DataSyncJumpWidth = 1;//0x2;
-//  hfdcan1.Init.DataTimeSeg1 = 5;//0x7;
-//  hfdcan1.Init.DataTimeSeg2 = 2;//0x2;
-//  hfdcan1.Init.MessageRAMOffset = 0;
-//  hfdcan1.Init.StdFiltersNbr = 0;//1;
-//  hfdcan1.Init.ExtFiltersNbr = 0;//1;
-//  hfdcan1.Init.RxFifo0ElmtsNbr = 8;
-//  hfdcan1.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_64;
-//  hfdcan1.Init.RxFifo1ElmtsNbr = 0;
-//  hfdcan1.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_64;
-//  hfdcan1.Init.RxBuffersNbr = 8;
-//  hfdcan1.Init.RxBufferSize = FDCAN_DATA_BYTES_64;
-//  hfdcan1.Init.TxEventsNbr = 2;
-//  hfdcan1.Init.TxBuffersNbr = 8;
-//  hfdcan1.Init.TxFifoQueueElmtsNbr = 8;
-//  hfdcan1.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
-//  hfdcan1.Init.TxElmtSize = FDCAN_DATA_BYTES_64;
-//  if (HAL_FDCAN_Init(&hfdcan1) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-//  /* USER CODE BEGIN FDCAN1_Init 2 */
-//
-//  /* USER CODE END FDCAN1_Init 2 */
-//
+//  /* GPIO Ports Clock Enable */
+//  __HAL_RCC_GPIOB_CLK_ENABLE();
+//  __HAL_RCC_GPIOG_CLK_ENABLE();
+//  __HAL_RCC_GPIOA_CLK_ENABLE();
+//  __HAL_RCC_GPIOZ_CLK_ENABLE();
 //}
 
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
 
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOZ_CLK_ENABLE();
-}
-
-/**
-  * @brief Compares two buffers.
-  * @par Input
-  *  - pBuffer1, pBuffer2: buffers to be compared.
-  *  - BufferLength: buffer's length
-  * @par Output
-  * None.
-  * @retval
-  *   0: pBuffer1 identical to pBuffer2
-  *   1: pBuffer1 differs from pBuffer2
-  */
-static uint32_t BufferCmp8b(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength)
-{
-  while(BufferLength--)
-  {
-    if(*pBuffer1 != *pBuffer2)
-    {
-      return 1;
-    }
-
-    pBuffer1++;
-    pBuffer2++;
-  }
-  return 0;
-}
-
-/**
-  * @brief IPPC Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_IPCC_Init(void)
-{
-
-  hipcc.Instance = IPCC;
-  if (HAL_IPCC_Init(&hipcc) != HAL_OK)
-  {
-     Error_Handler();
-  }
-}
 
 /* USER CODE BEGIN 4 */
 
