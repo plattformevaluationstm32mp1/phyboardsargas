@@ -21,6 +21,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "LxUtilities.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -62,7 +63,7 @@ uint8_t TxData0[] = {0x10, 0x32, 0x54, 0x76, 0x98, 0x00, 0x11, 0x22, 0x33, 0x44,
 uint8_t TxData1[] = {0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55};
 uint8_t TxData2[] = {0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00};
 uint8_t RxData[64];
-
+uint8_t CanFdTrace[235]; //--> remove last only 0 termination for printf
 
 VIRT_UART_HandleTypeDef huart0;
 VIRT_UART_HandleTypeDef huart1;
@@ -106,11 +107,6 @@ static uint32_t BufferCmp8b(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t Buffe
 void VIRT_UART0_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
 void VIRT_UART1_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
 /* USER CODE END PFP */
-
-typedef struct {
-    uint8_t u8Digits[2u];
-} LxUtilities_Hex8Struct_t;
-
 
 
 /* Private user code ---------------------------------------------------------*/
@@ -327,13 +323,18 @@ int main(void)
     {
       	/* Retrieve message from Rx FIFO 0 */
     	memset(RxData, 0, sizeof(RxData));
+    	memset(CanFdTrace, 32, sizeof(CanFdTrace));
+    	CanFdTrace[233] = '\r';
+        CanFdTrace[232] = '\n';
+        CanFdTrace[234] = 0;
       	if (HAL_FDCAN_GetRxMessage(&hfdcan1, FDCAN_RX_FIFO0, &RxHeader, RxData) == HAL_OK)
       	{
       		printf("Data received - ");
+
       		for(int i = 0; i < 64; i++) {
-      		    printf(" %02X", RxData[i]);
+      			LxUtilities_vUint8ToHex(RxData[i], (LxUtilities_Hex8Struct_t*)&(CanFdTrace[32 + 3*i]));
       		}
-      		printf("\r\n");
+  			printf(CanFdTrace);
       	} else {
 
       		printf("Nothing \r\n");
@@ -443,61 +444,30 @@ int main(void)
 
 
 
-//    OPENAMP_check_for_message();
-//
-//    /* USER CODE END WHILE */
-//    if (VirtUart0RxMsg) {
-//      VirtUart0RxMsg = RESET;
-//      VIRT_UART_Transmit(&huart0, VirtUart0ChannelBuffRx, VirtUart0ChannelRxSize);
-//    }
-//
-//    if (VirtUart1RxMsg) {
-//      VirtUart1RxMsg = RESET;
-//      VIRT_UART_Transmit(&huart1, VirtUart1ChannelBuffRx, VirtUart1ChannelRxSize);
-//    }
-//
-//    BSP_LED_Toggle(LED1);
-//    counter = 0;
-//    if (VIRT_UART_Transmit(&huart1, TestMessage, TestMessageSize) != VIRT_UART_OK) {
-//		BSP_LED_On(LED2);
-//		} else  {
-//			BSP_LED_Off(LED2);
-//		}
-//	    printf("\r\n                ** Start Fast Toggle Test : see LED1!\r\n");
-//    }
+    OPENAMP_check_for_message();
+
+    /* USER CODE END WHILE */
+    if (VirtUart0RxMsg) {
+      VirtUart0RxMsg = RESET;
+      VIRT_UART_Transmit(&huart0, VirtUart0ChannelBuffRx, VirtUart0ChannelRxSize);
+    }
+
+    if (VirtUart1RxMsg) {
+      VirtUart1RxMsg = RESET;
+      VIRT_UART_Transmit(&huart1, VirtUart1ChannelBuffRx, VirtUart1ChannelRxSize);
+    }
+
+   // BSP_LED_Toggle(LED1);
+    counter = 0;
+    if (VIRT_UART_Transmit(&huart1, CanFdTrace, 234) != VIRT_UART_OK) {
+		BSP_LED_On(LED2);
+		} else  {
+		BSP_LED_Off(LED2);
+
+    }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
-}
-
-
-
-/**************************************************************************************************/
-/**
- * @brief           Converts a uint8_t value into a hex8 value.
- *
- * @remarks         -
- *
- * @param[in]       u8Input: Value to convert.
- *                  \n [Range: 0..255]
- *
- * @param[out]      pstHex8Result: Array of hex digits in ascii format.
- *                  \n [Range: '0'..'9', 'A'..'F']
- *
- * @pre             -
- *
- * @post            -
- *
- **************************************************************************************************/
-void LxUtilities_vUint8ToHex(uint8_t u8Input, LxUtilities_Hex8Struct_t *const pstHex8Result) {
-    L0ASSERT_vERROR(pstHex8Result != NULL);
-
-    uint8_t u8LowNibble = u8Input & 0x0Fu;
-    uint8_t u8HighNibble = (u8Input >> 4u) & 0x0Fu;
-/*lint -e70*/
-    ((uint8_t *)pstHex8Result->u8Digits)[0u] = (u8HighNibble < 10u) ? (48u + u8HighNibble) : (55u + u8HighNibble);
-/*lint -e70*/
-    ((uint8_t *)pstHex8Result->u8Digits)[1u] = (u8LowNibble < 10u) ? (48u + u8LowNibble) : (55u + u8LowNibble);
 }
 
 
