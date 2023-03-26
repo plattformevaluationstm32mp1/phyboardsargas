@@ -27,7 +27,7 @@
 //#include "openamp.h"
 #include "usart.h"
 #include "gpio.h"
-#include "LxUtilities.h"
+#include "fdcanutil.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -53,7 +53,7 @@ FDCAN_TxHeaderTypeDef TxHeader;
 FDCAN_RxHeaderTypeDef RxHeader;
 
 uint8_t RxData[64];
-uint8_t CanFdTrace[235]; //--> remove last only 0 termination for printf
+uint8_t CanFdTrace[235]; //--> remove last only 0 termination for printf --> do not use printf use uart send
 
 VIRT_UART_HandleTypeDef huart0;
 VIRT_UART_HandleTypeDef huart1;
@@ -89,6 +89,82 @@ void SystemClock_Config(void);
 void VIRT_UART0_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
 void VIRT_UART1_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
 /* USER CODE END PFP */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void CreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[64], uint8_t au8TraceData[234]) {
+	memset(au8TraceData, 32, 234);
+	au8TraceData[233] = '\r';
+	au8TraceData[232] = '\n';
+
+
+
+	/*Message number: start at position 0, right align, max. 7 places*/
+	snprintf((void*)&(au8TraceData[0]), 8, "%07u", u32RxCount);
+
+
+	/*TimeOffset[ms]: start at position 8, right align, max. 13 places*/
+	uint32_t u32Timestamp1s = pstRxHeader->RxTimestamp / 1000u;
+	uint32_t u32Timestamp1ms = pstRxHeader->RxTimestamp % 1000u;
+	snprintf((void*)&(au8TraceData[8]), 10, "%013u", u32Timestamp1s);
+	au8TraceData[17] = '.';
+	snprintf((void*)&(au8TraceData[18]), 4, "%03u", u32Timestamp1ms);
+
+
+
+	/*Type:  start at position 22, 2 places */
+	snprintf((void*)&(au8TraceData[22]), 3, "%s", "FB");
+
+	/*ID:  start at position 25, right align, max 8 places */
+	snprintf((void*)&(au8TraceData[25]), 9, "%08X", pstRxHeader->Identifier);
+
+
+	/*Rx/Tx:  start at position 34, 2 places */
+	snprintf((void*)&(au8TraceData[34]), 3, "%s", "Rx");
+
+	/*Data length: start at position 37, 2 places */
+	snprintf((void*)&(au8TraceData[37]), 3, "%02u", pstRxHeader->DataLength);
+
+	/*Data: start at position 41, 192 places */
+	for(int i = 0; i < 64; i++) {
+		LxUtilities_vUint8ToHex(au8RxData[i], (void*)&(au8TraceData[40 + 3*i]));
+	}
+
+	/*Line End 2 places*/
+	au8TraceData[232] = '\r';
+	au8TraceData[233] = '\n';
+
+	/* remove null termination from snprintf*/
+	for(uint32_t i = 0; i< 234; i++) {
+		if(au8TraceData[i] == 0x00) {
+			au8TraceData[i] = 32;
+		}
+
+	}
+
+
+
+}
+
+
+
+
 
 
 /* Private user code ---------------------------------------------------------*/
@@ -180,27 +256,21 @@ int main(void)
     Error_Handler();
   }
 
-
+  uint32_t u32RxCount = 0;
   while(1) {
-
     Tickstart = HAL_GetTick();
-	//printf("Receive Data: ");
     if (HAL_FDCAN_GetRxFifoFillLevel(&hfdcan2, FDCAN_RX_FIFO0) != 0)
     {
     	BSP_LED_On(LED_GREEN);
+    	u32RxCount++;
       	/* Retrieve message from Rx FIFO 0 */
     	memset(RxData, 0, sizeof(RxData));
-    	memset(CanFdTrace, 32, sizeof(CanFdTrace));
-    	CanFdTrace[233] = '\r';
-        CanFdTrace[232] = '\n';
-        CanFdTrace[234] = 0;
+    	memset(CanFdTrace, 0, sizeof(CanFdTrace));
+
+
       	if (HAL_FDCAN_GetRxMessage(&hfdcan2, FDCAN_RX_FIFO0, &RxHeader, RxData) == HAL_OK)
       	{
-      		//printf("Data received - ");
-
-      		for(int i = 0; i < 64; i++) {
-      			LxUtilities_vUint8ToHex(RxData[i], (LxUtilities_Hex8Struct_t*)&(CanFdTrace[32 + 3*i]));
-      		}
+      		CreateCanFdTrace(&RxHeader, u32RxCount, RxData, CanFdTrace);
   			printf(CanFdTrace);
 
 
@@ -350,24 +420,6 @@ void SystemClock_Config(void)
   __HAL_RCC_RTC_HSEDIV(24);
 }
 
-///**
-//  * @brief GPIO Initialization Function
-//  * @param None
-//  * @retval None
-//  */
-//static void MX_GPIO_Init(void)
-//{
-//
-//  /* GPIO Ports Clock Enable */
-//  __HAL_RCC_GPIOB_CLK_ENABLE();
-//  __HAL_RCC_GPIOG_CLK_ENABLE();
-//  __HAL_RCC_GPIOA_CLK_ENABLE();
-//  __HAL_RCC_GPIOZ_CLK_ENABLE();
-//}
-
-
-
-/* USER CODE BEGIN 4 */
 
 int Serial_Scanf(char *ptr, int len)
 {
