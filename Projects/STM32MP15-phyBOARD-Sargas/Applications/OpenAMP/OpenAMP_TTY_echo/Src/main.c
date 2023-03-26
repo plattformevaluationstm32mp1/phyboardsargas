@@ -234,10 +234,10 @@ int main(void)
 
       	if (HAL_FDCAN_GetRxMessage(&hfdcan2, FDCAN_RX_FIFO0, &m_stRxHeader, m_au8RxData) == HAL_OK) {
 
-
       		m_stRxHeader.RxTimestamp = HAL_GetTick();
       		CreateCanFdTrace(&m_stRxHeader, u32RxCount, m_au8RxData, m_au8CanFdTrace);
-  			printf(m_au8CanFdTrace);
+
+      		HAL_UART_Transmit(&huart3, m_au8CanFdTrace, 234, 0xFFFF);
 
   		    if (VIRT_UART_Transmit(&huart1, m_au8CanFdTrace, 234) != VIRT_UART_OK) {
   				BSP_LED_On(LED_RED);
