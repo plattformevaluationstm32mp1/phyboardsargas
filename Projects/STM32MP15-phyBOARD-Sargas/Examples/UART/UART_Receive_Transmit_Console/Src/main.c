@@ -114,41 +114,44 @@ int main(void)
   /* USER CODE BEGIN 2 */
   /* Configure LED1 */
   BSP_LED_Init(LED1);
-
+  BSP_LED_Off(LED1);
   /* Output a message on Hyperterminal using printf function */
-  printf("\n\r*********************************************");
-  printf("\n\r** Start UART Receive and Transmit Example **");
-  printf("\n\r*********************************************\n\r");
-  printf("\n\r");
-  printf("\n\r    ** Retarget the C library 'printf' function to the UART\n\r");
-  printf("\n\r        >> Printf = Test finished successfully. ** \n\r");
-
-  printf("\n\r    ** Press c to continue with 'getchar' test !!! \r\n");
-  while (name[0] != 'c')
-  {
-    Serial_Scanf(name, 1);
-    if (name[0] != 'c')
-      {
-      printf("\n\r !!! Invalid Character, please press c to continue the test !!! \r\n");
-      }
-  }
-
-  Test_Validation_Menu();
-
-  BSP_LED_On(LED1);
-  printf("\n\r");
-  printf("\n\r********************************************");
-  printf("\n\r** Stop UART Receive and Transmit Example **");
-  printf("\n\r********************************************\n\r");
+//  printf("\n\r*********************************************");
+//  printf("\n\r** Start UART Receive and Transmit Example **");
+//  printf("\n\r*********************************************\n\r");
+//  printf("\n\r");
+//  printf("\n\r    ** Retarget the C library 'printf' function to the UART\n\r");
+//  printf("\n\r        >> Printf = Test finished successfully. ** \n\r");
+//
+//  printf("\n\r    ** Press c to continue with 'getchar' test !!! \r\n");
+//  BSP_LED_On(LED1);
+//  while (name[0] != 'c')
+//  {
+//    Serial_Scanf(name, 1);
+//    if (name[0] != 'c')
+//      {
+//      printf("\n\r !!! Invalid Character, please press c to continue the test !!! \r\n");
+//      }
+//  }
+//
+//  Test_Validation_Menu();
+//
+//  BSP_LED_On(LED1);
+//  printf("\n\r");
+//  printf("\n\r********************************************");
+//  printf("\n\r** Stop UART Receive and Transmit Example **");
+//  printf("\n\r********************************************\n\r");
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+        HAL_Delay(50);
+        BSP_LED_Toggle(LED1);
+        printf("\r\n                ** Start Fast Toggle Test : see LED1!\r\n");
+
 
   }
   /* USER CODE END 3 */
@@ -285,7 +288,7 @@ static void MX_USART3_UART_Init(void)
   /* USER CODE END USART3_Init 1 */
 
   huart1.Instance = USART3;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 921600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -328,6 +331,8 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOZ_CLK_ENABLE();
 }
 
 /* USER CODE BEGIN 4 */
@@ -414,7 +419,7 @@ void Test_Validation_Menu(void)
         while(duration < 50)
         {
           /* Toggle LED1 for error */
-          BSP_LED_Toggle(LED1);
+          //BSP_LED_Toggle(LED1);
           HAL_Delay(100);
           duration++;
         }
@@ -429,7 +434,7 @@ void Test_Validation_Menu(void)
         while(duration < 10)
         {
           /* Toggle LED1 for error */
-          BSP_LED_Toggle(LED1);
+         // BSP_LED_Toggle(LED1);
           HAL_Delay(500);
           duration++;
         }
@@ -466,7 +471,7 @@ void Error_Handler(void)
   while(1)
   {
     /* Toggle LED1 for error */
-    BSP_LED_Toggle(LED1);
+   // BSP_LED_Toggle(LED1);
     HAL_Delay(1000);
   }
   /* USER CODE END Error_Handler_Debug */

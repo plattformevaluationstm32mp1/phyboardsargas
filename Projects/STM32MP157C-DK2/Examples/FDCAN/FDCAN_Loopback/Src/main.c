@@ -117,8 +117,12 @@ if(IS_ENGINEERING_BOOT_MODE())
   /*HW semaphore Clock enable*/
   __HAL_RCC_HSEM_CLK_ENABLE();
 
-  /* Configure LED7 */
-  BSP_LED_Init(LED7);
+  /* Configure LED6 */
+  BSP_LED_Init(LED5);
+  BSP_LED_Init(LED6);
+
+  BSP_LED_On(LED5);
+  BSP_LED_Off(LED6);
 
   /* USER CODE END SysInit */
   
@@ -131,10 +135,10 @@ if(IS_ENGINEERING_BOOT_MODE())
   /* Configure standard ID reception filter to Rx FIFO 0 */
   sFilterConfig.IdType = FDCAN_STANDARD_ID;
   sFilterConfig.FilterIndex = 0;
-  sFilterConfig.FilterType = FDCAN_FILTER_DUAL;
+  sFilterConfig.FilterType = FDCAN_FILTER_MASK;
   sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-  sFilterConfig.FilterID1 = 0x444;
-  sFilterConfig.FilterID2 = 0x555;
+  sFilterConfig.FilterID1 = 0; //filter
+  sFilterConfig.FilterID2 = 0; //mask
   if (HAL_FDCAN_ConfigFilter(&hfdcan1, &sFilterConfig) != HAL_OK)
   {
     Error_Handler();
@@ -143,10 +147,10 @@ if(IS_ENGINEERING_BOOT_MODE())
   /* Configure extended ID reception filter to Rx FIFO 1 */
   sFilterConfig.IdType = FDCAN_EXTENDED_ID;
   sFilterConfig.FilterIndex = 0;
-  sFilterConfig.FilterType = FDCAN_FILTER_RANGE_NO_EIDM;
+  sFilterConfig.FilterType = FDCAN_FILTER_MASK;
   sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO1;
-  sFilterConfig.FilterID1 = 0x1111111;
-  sFilterConfig.FilterID2 = 0x2222222;
+  sFilterConfig.FilterID1 = 0; //filter
+  sFilterConfig.FilterID2 = 0; //mask
   if (HAL_FDCAN_ConfigFilter(&hfdcan1, &sFilterConfig) != HAL_OK)
   {
     Error_Handler();
@@ -157,6 +161,10 @@ if(IS_ENGINEERING_BOOT_MODE())
   {
     Error_Handler();
   }
+
+
+  //for(int i=0; i<500;i++) {
+  while(1) {
 
   /*##-3 Transmit messages ##################################################*/
   /* Add message to Tx FIFO */
@@ -215,7 +223,7 @@ if(IS_ENGINEERING_BOOT_MODE())
       Error_Handler();
       break;
     }
-  } 
+  }
 
   /*##-4 Receive messages ###################################################*/
   /* Get tick */
@@ -277,6 +285,13 @@ if(IS_ENGINEERING_BOOT_MODE())
   {
     Error_Handler();
   }
+
+  BSP_LED_Toggle(LED5);
+  HAL_Delay(50);
+
+
+  }
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -284,7 +299,7 @@ if(IS_ENGINEERING_BOOT_MODE())
   while (1)
   {
     /* Toggle LED7 */
-    BSP_LED_Toggle(LED7);
+    BSP_LED_Toggle(LED5);
     HAL_Delay(100);
   /* USER CODE END WHILE */
 
@@ -432,8 +447,8 @@ static void MX_FDCAN1_Init(void)
   /* USER CODE BEGIN FDCAN1_Init 1 */
 
   /* USER CODE END FDCAN1_Init 1 */
-  hfdcan1.Instance = FDCAN1;
-  hfdcan1.Init.FrameFormat = FDCAN_FRAME_FD_BRS;
+  hfdcan1.Instance = FDCAN2;
+  hfdcan1.Init.FrameFormat = FDCAN_FRAME_FD_NO_BRS;
   hfdcan1.Init.Mode = FDCAN_MODE_EXTERNAL_LOOPBACK;
   hfdcan1.Init.AutoRetransmission = ENABLE;
   hfdcan1.Init.TransmitPause = DISABLE;
@@ -450,17 +465,17 @@ static void MX_FDCAN1_Init(void)
             Phase_segment_1            | 10 tq        |  2 tq
             Phase_segment_2            | 10 tq        |  2 tq
             Synchronization_Jump_width | 10 tq        |  2 tq
-            Bit_length                 | 80 tq = 1 µs |  10 tq = 0.125 µs
+            Bit_length                 | 80 tq = 1 Âµs |  10 tq = 0.125 Âµs
             Bit_rate                   |  1 MBit/s    |  8 MBit/s
 	 */
-  hfdcan1.Init.NominalPrescaler = 0x2;
-  hfdcan1.Init.NominalSyncJumpWidth = 0xA;
-  hfdcan1.Init.NominalTimeSeg1 = 0x1D;
-  hfdcan1.Init.NominalTimeSeg2 = 0xA;
-  hfdcan1.Init.DataPrescaler = 0x1;
-  hfdcan1.Init.DataSyncJumpWidth = 0x2;
-  hfdcan1.Init.DataTimeSeg1 = 0x7;
-  hfdcan1.Init.DataTimeSeg2 = 0x2;
+  hfdcan1.Init.NominalPrescaler = 3;//10;//0x2;
+  hfdcan1.Init.NominalSyncJumpWidth = 1;//0xA;
+  hfdcan1.Init.NominalTimeSeg1 = 5;//0x1D;
+  hfdcan1.Init.NominalTimeSeg2 = 2;//0xA;
+  hfdcan1.Init.DataPrescaler = 3;//10;//0x1;
+  hfdcan1.Init.DataSyncJumpWidth = 1;//0x2;
+  hfdcan1.Init.DataTimeSeg1 = 5;//0x7;
+  hfdcan1.Init.DataTimeSeg2 = 2;//0x2;
   hfdcan1.Init.MessageRAMOffset = 0;
   hfdcan1.Init.StdFiltersNbr = 1;
   hfdcan1.Init.ExtFiltersNbr = 1;
@@ -492,6 +507,7 @@ static void MX_GPIO_Init(void)
 {
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOI_CLK_ENABLE();
 
@@ -534,11 +550,12 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  /* Turn LED7 on */
-  BSP_LED_On(LED7);
+  /* Turn LED6 on */
 
   while(1)
   {
+	  BSP_LED_Toggle(LED6);
+	  HAL_Delay(200);
   }
   /* USER CODE END Error_Handler_Debug */
 }
