@@ -30,40 +30,28 @@
 #include "LxUtilities.h"
 
 /* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 
-/* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
 
-/* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-#define TX_FAST_TIMEOUT 10
-#define RX_FAST_TIMEOUT 10
 #define FDCAN_TX_BUFFER0  ((uint32_t)0x00000001U) /*!< Add message to Tx Buffer 0  */
 #define FDCAN_TX_BUFFER1  ((uint32_t)0x00000002U) /*!< Add message to Tx Buffer 1  */
 #define FDCAN_TX_BUFFER2  ((uint32_t)0x00000004U) /*!< Add message to Tx Buffer 2  */
 
 #define MAX_BUFFER_SIZE RPMSG_BUFFER_SIZE
-/* USER CODE END PD */
+
 
 /* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
 
-/* USER CODE END PM */
+
+
 
 /* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-FDCAN_FilterTypeDef sFilterConfig;
 FDCAN_TxHeaderTypeDef TxHeader;
 FDCAN_RxHeaderTypeDef RxHeader;
-uint8_t TxData0[] = {0x10, 0x32, 0x54, 0x76, 0x98, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
-uint8_t TxData1[] = {0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55};
-uint8_t TxData2[] = {0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00};
+
 uint8_t RxData[64];
 uint8_t CanFdTrace[235]; //--> remove last only 0 termination for printf
 
@@ -78,15 +66,11 @@ __IO FlagStatus VirtUart1RxMsg = RESET;
 uint8_t VirtUart1ChannelBuffRx[MAX_BUFFER_SIZE];
 uint16_t VirtUart1ChannelRxSize = 0;
 
-const uint8_t TestMessage[] = "      1         0.136 FB     0309 Rx 64 34 00 AA 2B FC A6 04 01 05 27 35 33 B3 3F 02 00 C0 3F CF CC CC 3F 9C 99 D9 3F 69 66 E6 3F 36 33 F3 3F 01 00 00 40 67 66 06 40 CD CC 0C 40 33 33 13 40 99 99 19 40 FF FF 1F 40 65 66 26 40 00 00 \n";
-uint16_t TestMessageSize = sizeof(TestMessage);
-/* USER CODE END PV */
-
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 
-/* USER CODE BEGIN PFP */
-static uint32_t BufferCmp8b(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength);
+
+
 
 #ifdef __GNUC__
 /* With GCC, small printf (option LD Linker->Libraries->Small printf
@@ -119,7 +103,7 @@ int main(void)
 {
 	uint32_t Tickstart;
   /* USER CODE BEGIN 1 */
-  unsigned int counter = 0;
+
 
   /* USER CODE END 1 */
 
@@ -146,10 +130,10 @@ int main(void)
   MX_USART3_UART_Init();
   MX_FDCAN2_Init();
 
-  BSP_LED_Init(LED1);
-  BSP_LED_Init(LED2);
-  BSP_LED_On(LED1);
-  BSP_LED_Off(LED2);
+  BSP_LED_Init(LED_GREEN);
+  BSP_LED_Init(LED_RED);
+  BSP_LED_Off(LED_GREEN);
+  BSP_LED_Off(LED_RED);
   /* USER CODE END Init */
 
   /*HW semaphore Clock enable*/
@@ -167,11 +151,7 @@ int main(void)
     Error_Handler();
   }
 
-  /* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
 
   /* USER CODE BEGIN 2 */
   /*
@@ -201,98 +181,13 @@ int main(void)
   }
 
 
-  //for(int i=0; i<500;i++) {
   while(1) {
 
-  /*##-3 Transmit messages ##################################################*/
-  /* Add message to Tx FIFO */
-//  TxHeader.Identifier = 0x444;
-//  TxHeader.IdType = FDCAN_STANDARD_ID;
-//  TxHeader.TxFrameType = FDCAN_DATA_FRAME;
-//  TxHeader.DataLength = FDCAN_DLC_BYTES_12;
-//  TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
-//  TxHeader.BitRateSwitch = FDCAN_BRS_ON;
-//  TxHeader.FDFormat = FDCAN_FD_CAN;
-//  TxHeader.TxEventFifoControl = FDCAN_STORE_TX_EVENTS;
-//  TxHeader.MessageMarker = 0x52;
-//  if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData0) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-
-//  /* Add second message to Tx FIFO */
-//  TxHeader.Identifier = 0x1111112;
-//  TxHeader.IdType = FDCAN_EXTENDED_ID;
-//  TxHeader.TxFrameType = FDCAN_DATA_FRAME;
-//  TxHeader.DataLength = FDCAN_DLC_BYTES_12;
-//  TxHeader.ErrorStateIndicator = FDCAN_ESI_PASSIVE;
-//  TxHeader.BitRateSwitch = FDCAN_BRS_ON;
-//  TxHeader.FDFormat = FDCAN_FD_CAN;
-//  TxHeader.TxEventFifoControl = FDCAN_STORE_TX_EVENTS;
-//  TxHeader.MessageMarker = 0xCC;
-//  if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData1) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-//
-//  /* Add third message to Tx FIFO */
-//  TxHeader.Identifier = 0x1111113;
-//  TxHeader.IdType = FDCAN_EXTENDED_ID;
-//  TxHeader.TxFrameType = FDCAN_DATA_FRAME;
-//  TxHeader.DataLength = FDCAN_DLC_BYTES_12;
-//  TxHeader.ErrorStateIndicator = FDCAN_ESI_PASSIVE;
-//  TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
-//  TxHeader.FDFormat = FDCAN_FD_CAN;
-//  TxHeader.TxEventFifoControl = FDCAN_STORE_TX_EVENTS;
-//  TxHeader.MessageMarker = 0xDD;
-//  if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData2) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-
-  /* Get tick */
-//  Tickstart = HAL_GetTick();
-//
-//  /* Check transmission occurred before timeout */
-//  while(HAL_FDCAN_IsTxBufferMessagePending(&hfdcan1, FDCAN_TX_BUFFER0 | FDCAN_TX_BUFFER1 | FDCAN_TX_BUFFER2) != 0)
-//  {
-//    if((HAL_GetTick() - Tickstart) > TX_FAST_TIMEOUT)
-//    {
-//      Error_Handler();
-//      break;
-//    }
-//  }
-
-  /*##-4 Receive messages ###################################################*/
-
-//  /* Get tick */
-//  Tickstart = HAL_GetTick();
-//  /* Check one message is received in Rx FIFO 0 */
-//  printf("Receive Data: ");
-//  while(HAL_FDCAN_GetRxFifoFillLevel(&hfdcan1, FDCAN_RX_FIFO0) != 1)
-//  {
-//    if((HAL_GetTick() - Tickstart) > RX_FAST_TIMEOUT)
-//    {
-//      Error_Handler();
-//      break;
-//    }
-//  }
-//  printf("Data received \r\n");
-//
-//  /* Retrieve message from Rx FIFO 0 */
-//  if (HAL_FDCAN_GetRxMessage(&hfdcan1, FDCAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-
-
-
-
-
     Tickstart = HAL_GetTick();
-	printf("Receive Data: ");
+	//printf("Receive Data: ");
     if (HAL_FDCAN_GetRxFifoFillLevel(&hfdcan2, FDCAN_RX_FIFO0) != 0)
     {
+    	BSP_LED_On(LED_GREEN);
       	/* Retrieve message from Rx FIFO 0 */
     	memset(RxData, 0, sizeof(RxData));
     	memset(CanFdTrace, 32, sizeof(CanFdTrace));
@@ -301,99 +196,25 @@ int main(void)
         CanFdTrace[234] = 0;
       	if (HAL_FDCAN_GetRxMessage(&hfdcan2, FDCAN_RX_FIFO0, &RxHeader, RxData) == HAL_OK)
       	{
-      		printf("Data received - ");
+      		//printf("Data received - ");
 
       		for(int i = 0; i < 64; i++) {
       			LxUtilities_vUint8ToHex(RxData[i], (LxUtilities_Hex8Struct_t*)&(CanFdTrace[32 + 3*i]));
       		}
   			printf(CanFdTrace);
+
+
+  		    if (VIRT_UART_Transmit(&huart1, CanFdTrace, 234) != VIRT_UART_OK) {
+  				BSP_LED_On(LED_RED);
+  				} else  {
+  				BSP_LED_Off(LED_RED);
+  		    }
       	} else {
 
-      		printf("Nothing \r\n");
+      		//printf("Nothing \r\n");
       	}
   	}
-
-
-
-
-
-
-
-
-
-
-
-
-//  /* Compare payload to expected data */
-//  if (BufferCmp8b(TxData0, RxData, 12) != 0)
-//  {
-//    Error_Handler();
-//  }
-
-//  /* Get tick */
-//  Tickstart = HAL_GetTick();
-//  /* Check two messages are received in Rx FIFO 1 */
-//  while(HAL_FDCAN_GetRxFifoFillLevel(&hfdcan1, FDCAN_RX_FIFO1) != 2)
-//  {
-//    if((HAL_GetTick() - Tickstart) > RX_FAST_TIMEOUT)
-//    {
-//      Error_Handler();
-//      break;
-//    }
-//  }
-//
-//  /* Retrieve message from Rx FIFO 1 */
-//  if (HAL_FDCAN_GetRxMessage(&hfdcan1, FDCAN_RX_FIFO1, &RxHeader, RxData) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-//
-//  /* Compare payload to expected data */
-//  if (BufferCmp8b(TxData1, RxData, 12) != 0)
-//  {
-//    Error_Handler();
-//  }
-//
-//  /* Retrieve next message from Rx FIFO 1 */
-//  if (HAL_FDCAN_GetRxMessage(&hfdcan1, FDCAN_RX_FIFO1, &RxHeader, RxData) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-//
-//  /* Compare payload to expected data */
-//  if (BufferCmp8b(TxData2, RxData, 12) != 0)
-//  {
-//    Error_Handler();
-//  }
-
-
-//	Tickstart = HAL_GetTick();
-//	printf("Receive Data: ");
-//    if (HAL_FDCAN_GetRxFifoFillLevel(&hfdcan1, FDCAN_RX_FIFO0) != 0)
-//	{
-//
-//    	/* Retrieve message from Rx FIFO 0 */
-//    	if (HAL_FDCAN_GetRxMessage(&hfdcan1, FDCAN_RX_FIFO0, &RxHeader, RxData) == HAL_OK)
-//    	{
-//    		printf("Data received \r\n");
-//    	} else {
-//
-//    		printf("Nothing \r\n");
-//    	}
-//
-//
-//	}
-
-
-
-
-
-
-  BSP_LED_Toggle(LED1);
-  HAL_Delay(50);
-
-
-//  }
+	BSP_LED_Off(LED_GREEN);
 
 
 
@@ -410,17 +231,7 @@ int main(void)
       VIRT_UART_Transmit(&huart1, VirtUart1ChannelBuffRx, VirtUart1ChannelRxSize);
     }
 
-   // BSP_LED_Toggle(LED1);
-    counter = 0;
-    if (VIRT_UART_Transmit(&huart1, CanFdTrace, 234) != VIRT_UART_OK) {
-		BSP_LED_On(LED2);
-		} else  {
-		BSP_LED_Off(LED2);
-
-    }
-    /* USER CODE BEGIN 3 */
   }
-  /* USER CODE END 3 */
 }
 
 
@@ -644,7 +455,7 @@ void Error_Handler(void)
   BSP_LED_Off(LED1);
   while(1)
   {
-	  BSP_LED_Toggle(LED2);
+	  BSP_LED_Toggle(LED_RED);
 	  HAL_Delay(50);
   }
   /* USER CODE END Error_Handler_Debug */
