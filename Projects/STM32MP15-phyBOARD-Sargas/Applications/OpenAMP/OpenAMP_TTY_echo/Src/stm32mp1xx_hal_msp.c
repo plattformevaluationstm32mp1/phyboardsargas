@@ -82,49 +82,49 @@ void HAL_MspInit(void)
 * @param huart: UART handle pointer
 * @retval None
 */
-void HAL_UART_MspInit(UART_HandleTypeDef* huart)
-{
-  GPIO_InitTypeDef GPIO_InitStruct;
-
-  if(huart->Instance==USART3)
-  {
-  /* USER CODE BEGIN USART3_MspInit 0 */
-
-  /* USER CODE END USART3_MspInit 0 */
-    /* Peripheral clock enable */
-    __HAL_RCC_USART3_CLK_ENABLE();
-    __HAL_RCC_USART3_FORCE_RESET();
-    __HAL_RCC_USART3_RELEASE_RESET();
-
-    __HAL_RCC_GPIOG_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    /**USART3 GPIO Configuration
-    PB10     ------> USART3_TX
-    PB12     ------> USART3_RX
-    */
-    GPIO_InitStruct.Pin = GPIO_PIN_10;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
-    PERIPH_LOCK(GPIOB);
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    PERIPH_UNLOCK(GPIOB);
-
-    GPIO_InitStruct.Pin = GPIO_PIN_12;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF8_USART3;
-    PERIPH_LOCK(GPIOB);
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    PERIPH_UNLOCK(GPIOB);
-
-  /* USER CODE BEGIN USART3_MspInit 1 */
-
-  /* USER CODE END USART3_MspInit 1 */
-  }
-}
+//void HAL_UART_MspInit(UART_HandleTypeDef* huart)
+//{
+//  GPIO_InitTypeDef GPIO_InitStruct;
+//
+//  if(huart->Instance==USART3)
+//  {
+//  /* USER CODE BEGIN USART3_MspInit 0 */
+//
+//  /* USER CODE END USART3_MspInit 0 */
+//    /* Peripheral clock enable */
+//    __HAL_RCC_USART3_CLK_ENABLE();
+//    __HAL_RCC_USART3_FORCE_RESET();
+//    __HAL_RCC_USART3_RELEASE_RESET();
+//
+//    __HAL_RCC_GPIOG_CLK_ENABLE();
+//    __HAL_RCC_GPIOB_CLK_ENABLE();
+//    /**USART3 GPIO Configuration
+//    PB10     ------> USART3_TX
+//    PB12     ------> USART3_RX
+//    */
+//    GPIO_InitStruct.Pin = GPIO_PIN_10;
+//    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+//    GPIO_InitStruct.Pull = GPIO_PULLUP;
+//    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+//    GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
+//    PERIPH_LOCK(GPIOB);
+//    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+//    PERIPH_UNLOCK(GPIOB);
+//
+//    GPIO_InitStruct.Pin = GPIO_PIN_12;
+//    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+//    GPIO_InitStruct.Pull = GPIO_PULLUP;
+//    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+//    GPIO_InitStruct.Alternate = GPIO_AF8_USART3;
+//    PERIPH_LOCK(GPIOB);
+//    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+//    PERIPH_UNLOCK(GPIOB);
+//
+//  /* USER CODE BEGIN USART3_MspInit 1 */
+//
+//  /* USER CODE END USART3_MspInit 1 */
+//  }
+//}
 
 /**
 * @brief USART MSP De-Initialization
@@ -132,33 +132,33 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 * @param husart: USART handle pointer
 * @retval None
 */
-void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
-{
-	if(huart->Instance==USART3)
-  {
-  /* USER CODE BEGIN USART3_MspDeInit 0 */
-    __HAL_RCC_USART3_FORCE_RESET();
-    __HAL_RCC_USART3_RELEASE_RESET();
-  /* USER CODE END USART3_MspDeInit 0 */
-    /* Peripheral clock disable */
-    __HAL_RCC_USART3_CLK_DISABLE();
-
-    /**USART3 GPIO Configuration
-    PB10     ------> USART3_TX
-    PB12     ------> USART3_RX
-    */
-    PERIPH_LOCK(GPIOB);
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_10);
-    PERIPH_UNLOCK(GPIOB);
-    PERIPH_LOCK(GPIOB);
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12);
-    PERIPH_UNLOCK(GPIOB);
-  /* USER CODE BEGIN USART3_MspDeInit 1 */
-
-  /* USER CODE END USART3_MspDeInit 1 */
-  }
-
-}
+//void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
+//{
+//	if(huart->Instance==USART3)
+//  {
+//  /* USER CODE BEGIN USART3_MspDeInit 0 */
+//    __HAL_RCC_USART3_FORCE_RESET();
+//    __HAL_RCC_USART3_RELEASE_RESET();
+//  /* USER CODE END USART3_MspDeInit 0 */
+//    /* Peripheral clock disable */
+//    __HAL_RCC_USART3_CLK_DISABLE();
+//
+//    /**USART3 GPIO Configuration
+//    PB10     ------> USART3_TX
+//    PB12     ------> USART3_RX
+//    */
+//    PERIPH_LOCK(GPIOB);
+//    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_10);
+//    PERIPH_UNLOCK(GPIOB);
+//    PERIPH_LOCK(GPIOB);
+//    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12);
+//    PERIPH_UNLOCK(GPIOB);
+//  /* USER CODE BEGIN USART3_MspDeInit 1 */
+//
+//  /* USER CODE END USART3_MspDeInit 1 */
+//  }
+//
+//}
 
 /**
 * @brief FDCAN MSP Initialization
@@ -282,7 +282,7 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef* hfdcan)
    PERIPH_LOCK(GPIOI);
    HAL_GPIO_DeInit(GPIOI, GPIO_PIN_9);
    PERIPH_UNLOCK(GPIOI);
- 
+
   /* USER CODE BEGIN FDCAN1_MspDeInit 1 */
 
   /* USER CODE END FDCAN1_MspDeInit 1 */
