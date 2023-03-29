@@ -89,35 +89,106 @@ void VIRT_UART1_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
 
 
 
+uint8_t u8GetDataLength(uint32_t u32DataLengthCode) {
+	uint8_t u8DataLength = 0;
+	switch(u32DataLengthCode) {
+	case FDCAN_DLC_BYTES_0:
+		u8DataLength = 0;
+		break;
+
+	case FDCAN_DLC_BYTES_1:
+		u8DataLength = 1;
+		break;
+
+	case FDCAN_DLC_BYTES_2:
+		u8DataLength = 2;
+		break;
+
+	case FDCAN_DLC_BYTES_3:
+		u8DataLength = 3;
+		break;
+
+	case FDCAN_DLC_BYTES_4:
+		u8DataLength = 4;
+		break;
+
+	case FDCAN_DLC_BYTES_5:
+		u8DataLength = 5;
+		break;
+
+	case FDCAN_DLC_BYTES_6:
+		u8DataLength = 6;
+		break;
+
+	case FDCAN_DLC_BYTES_7:
+		u8DataLength = 7;
+		break;
+
+	case FDCAN_DLC_BYTES_8:
+		u8DataLength = 8;
+		break;
+
+	case FDCAN_DLC_BYTES_12:
+		u8DataLength = 12;
+		break;
+
+	case FDCAN_DLC_BYTES_16:
+		u8DataLength = 16;
+		break;
+
+	case FDCAN_DLC_BYTES_20:
+		u8DataLength = 20;
+		break;
+
+	case FDCAN_DLC_BYTES_32:
+		u8DataLength = 32;
+		break;
+
+	case FDCAN_DLC_BYTES_48:
+		u8DataLength = 48;
+		break;
+
+	case FDCAN_DLC_BYTES_64:
+		u8DataLength = 64;
+		break;
+
+	default:
+		u8DataLength = 0;
+		break;
+
+	return u8DataLength;
+	}
+}
+
 void CreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[64], uint8_t au8TraceData[234]) {
 	memset(au8TraceData, 32, 234);
 	au8TraceData[233] = '\r';
 	au8TraceData[232] = '\n';
 
-	/*Message number: start at position 0, right align, max. 7 places*/
+	/*Field 0 - Message number: start at position 0, right align, max. 7 places*/
 	snprintf((void*)&(au8TraceData[0]), 8, "%07u", u32RxCount);
 
-	/*TimeOffset[ms]: start at position 8, right align, max. 9 places for [s] max 3 places for [ms]*/
+	/*Field 1 - TimeOffset[ms]: start at position 8, right align, max. 9 places for [s] max 3 places for [ms]*/
 	uint32_t u32Timestamp1s = pstRxHeader->RxTimestamp / 1000u;
 	uint32_t u32Timestamp1ms = pstRxHeader->RxTimestamp % 1000u;
 	snprintf((void*)&(au8TraceData[8]), 10, "%09u", u32Timestamp1s);
 	au8TraceData[17] = '.';
 	snprintf((void*)&(au8TraceData[18]), 4, "%03u", u32Timestamp1ms);
 
-	/*Type:  start at position 22, 2 places */
+	/*Field 2 - Type:  start at position 22, 2 places */
 	snprintf((void*)&(au8TraceData[22]), 3, "%s", "FB");
 
-	/*ID:  start at position 25, right align, max 8 places */
+	/*Field 3 - CanId:  start at position 25, right align, max 8 places */
 	snprintf((void*)&(au8TraceData[25]), 9, "%08X", pstRxHeader->Identifier);
 
 
-	/*Rx/Tx:  start at position 34, 2 places */
+	/*Field 4 - Rx/Tx:  start at position 34, 2 places */
 	snprintf((void*)&(au8TraceData[34]), 3, "%s", "Rx");
 
-	/*Data length: start at position 37, 2 places */
-	snprintf((void*)&(au8TraceData[37]), 3, "%02u", pstRxHeader->DataLength);
+	/*Field 5 - Data length: start at position 37, 2 places */
+	snprintf((void*)&(au8TraceData[37]), 3, "%02u", u8GetDataLength(pstRxHeader->DataLength));
 
-	/*Data: start at position 41, 192 places */
+	/*Field 6 - Data: start at position 41, 192 places */
 	for(int i = 0; i < 64; i++) {
 		LxUtilities_vUint8ToHex(au8RxData[i], (void*)&(au8TraceData[40 + 3*i]));
 	}
