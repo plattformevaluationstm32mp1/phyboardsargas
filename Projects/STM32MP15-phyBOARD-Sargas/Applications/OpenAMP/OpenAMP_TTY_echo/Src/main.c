@@ -40,10 +40,14 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private const -------------------------------------------------------------*/
-const char m_szCMD_START[] = "start";
-const char m_szCMD_STOPT[] = "stop";
+const uint8_t m_au8CMD_START[] = {'s','t','a','r','t'};
+const uint8_t m_au8CMD_STOP[] = {'s','t','o','p'};
 
 /* Private variables ---------------------------------------------------------*/
+bool m_bTxActive = false;
+
+
+
 //FDCAN_TxHeaderTypeDef TxHeader;
 FDCAN_RxHeaderTypeDef m_stRxHeader;
 
@@ -155,6 +159,9 @@ uint8_t u8GetDataLength(uint32_t u32DataLengthCode) {
     }
 }
 
+
+
+
 bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount,
         uint8_t au8RxData[64], uint8_t au8TraceData[233]) {
     memset(au8TraceData, 0x00, sizeof(au8TraceData));
@@ -201,7 +208,86 @@ bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount,
     return true;
 }
 
-/* Private user code ---------------------------------------------------------*/
+
+
+
+void vApplicationDo(void) {
+
+    static uint32_t s_u32RxCount = 0;
+
+
+    if(m_bTxActive == true) {
+        BSP_LED_On(LED_GREEN);
+        if (HAL_FDCAN_GetRxFifoFillLevel(&hfdcan2, FDCAN_RX_FIFO0) != 0) {
+            s_u32RxCount++;
+            /* Retrieve message from Rx FIFO 0 */
+            memset(m_au8RxData, 0u, sizeof(m_au8RxData));
+            memset(m_au8CanFdTrace, 0u, sizeof(m_au8CanFdTrace));
+
+            if (HAL_FDCAN_GetRxMessage(&hfdcan2, FDCAN_RX_FIFO0, &m_stRxHeader,
+                    m_au8RxData) == HAL_OK) {
+
+                m_stRxHeader.RxTimestamp = HAL_GetTick();
+                bCreateCanFdTrace(&m_stRxHeader, s_u32RxCount, m_au8RxData,
+                        m_au8CanFdTrace);
+
+                HAL_UART_Transmit(&huart3, m_au8CanFdTrace,
+                        sizeof(m_au8CanFdTrace), 0xFFFF);
+
+                if (VIRT_UART_Transmit(&huart1, m_au8CanFdTrace,
+                        sizeof(m_au8CanFdTrace)) != VIRT_UART_OK) {
+                    BSP_LED_On(LED_RED);
+                } else {
+                    BSP_LED_Off(LED_RED);
+                }
+            } else {
+
+            }
+        }
+        BSP_LED_Off(LED_GREEN);
+    }
+
+
+
+
+
+    OPENAMP_check_for_message();
+
+    /* USER CODE END WHILE */
+    if (VirtUart0RxMsg) {
+        VirtUart0RxMsg = RESET;
+        VIRT_UART_Transmit(&huart0, VirtUart0ChannelBuffRx,
+                VirtUart0ChannelRxSize);
+
+        if (memcmp(VirtUart0ChannelBuffRx, m_au8CMD_START, sizeof(m_au8CMD_START)) == 0) {
+            m_bTxActive = true;
+        }
+
+        if (memcmp(VirtUart0ChannelBuffRx, m_au8CMD_STOP, sizeof(m_au8CMD_STOP)) == 0) {
+            m_bTxActive = false;
+        }
+    }
+
+    if (VirtUart1RxMsg) {
+        VirtUart1RxMsg = RESET;
+        VIRT_UART_Transmit(&huart0, VirtUart1ChannelBuffRx,
+                VirtUart1ChannelBuffRx);
+
+        if (memcmp(VirtUart1ChannelBuffRx, m_au8CMD_START, sizeof(m_au8CMD_START)) == 0) {
+            m_bTxActive = true;
+        }
+
+        if (memcmp(VirtUart1ChannelBuffRx, m_au8CMD_STOP, sizeof(m_au8CMD_STOP)) == 0) {
+            m_bTxActive = false;
+        }
+    }
+
+
+}
+
+
+
+
 
 /**
  * @brief  The application entry point.
@@ -278,51 +364,7 @@ int main(void) {
 
     uint32_t u32RxCount = 0;
     while (1) {
-        u32Tickstart = HAL_GetTick();
-        if (HAL_FDCAN_GetRxFifoFillLevel(&hfdcan2, FDCAN_RX_FIFO0) != 0) {
-            BSP_LED_On(LED_GREEN);
-            u32RxCount++;
-            /* Retrieve message from Rx FIFO 0 */
-            memset(m_au8RxData, 0u, sizeof(m_au8RxData));
-            memset(m_au8CanFdTrace, 0u, sizeof(m_au8CanFdTrace));
-
-            if (HAL_FDCAN_GetRxMessage(&hfdcan2, FDCAN_RX_FIFO0, &m_stRxHeader,
-                    m_au8RxData) == HAL_OK) {
-
-                m_stRxHeader.RxTimestamp = HAL_GetTick();
-                bCreateCanFdTrace(&m_stRxHeader, u32RxCount, m_au8RxData,
-                        m_au8CanFdTrace);
-
-                HAL_UART_Transmit(&huart3, m_au8CanFdTrace,
-                        sizeof(m_au8CanFdTrace), 0xFFFF);
-
-                if (VIRT_UART_Transmit(&huart1, m_au8CanFdTrace,
-                        sizeof(m_au8CanFdTrace)) != VIRT_UART_OK) {
-                    BSP_LED_On(LED_RED);
-                } else {
-                    BSP_LED_Off(LED_RED);
-                }
-            } else {
-
-            }
-        }
-        BSP_LED_Off(LED_GREEN);
-
-        OPENAMP_check_for_message();
-
-        /* USER CODE END WHILE */
-        if (VirtUart0RxMsg) {
-            VirtUart0RxMsg = RESET;
-            VIRT_UART_Transmit(&huart0, VirtUart0ChannelBuffRx,
-                    VirtUart0ChannelRxSize);
-        }
-
-        if (VirtUart1RxMsg) {
-            VirtUart1RxMsg = RESET;
-            VIRT_UART_Transmit(&huart1, VirtUart1ChannelBuffRx,
-                    VirtUart1ChannelRxSize);
-        }
-
+        vApplicationDo();
     }
 }
 
@@ -435,56 +477,6 @@ void SystemClock_Config(void) {
      */
     __HAL_RCC_RTC_HSEDIV(24);
 }
-
-//int Serial_Scanf(char *ptr, int len)
-//{
-//
-//  int DataIdx = 0;
-//  uint8_t thechar;
-//  thechar= ' ';
-//  while(thechar!= '\n' && thechar != '\r' && DataIdx<len)
-//  {
-//#ifdef __GNUC__
-//    thechar = __io_getchar();
-//
-//#else
-//    thechar = fgetc(NULL);
-//#endif
-//  if ( thechar  >= 0xFF)
-//  {
-//    printf("\n\r  !!! Please enter a valid ASCII character \n");
-//    return 0xFF;
-//  }
-//  *ptr++ =thechar;
-//  DataIdx+=1;
-//  }
-//  return DataIdx;
-//}
-///**
-//  * @brief  Retargets the C library printf function to the USART.
-//  * @param  None
-//  * @retval None
-//  */
-//PUTCHAR_PROTOTYPE
-//{
-//  /* Place your implementation of fputc here */
-//  /* e.g. write a character to the USART3 and Loop until the end of transmission */
-//  HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 0xFFFF);
-//
-//  return ch;
-//}
-//
-//
-//GETCHAR_PROTOTYPE
-//{
-//  uint8_t ch = 0;
-//  /* Clear the Overrun flag just before receiving the first character */
-//  __HAL_UART_CLEAR_OREFLAG(&huart3);
-//
-//  HAL_UART_Receive(&huart3, (uint8_t *)&ch, 1, 0xFFFF);
-//  HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 0xFFFF);
-//  return ch;
-//}
 
 void VIRT_UART0_RxCpltCallback(VIRT_UART_HandleTypeDef *huart) {
 
