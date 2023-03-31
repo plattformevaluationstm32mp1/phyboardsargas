@@ -28,7 +28,8 @@
 #include "usart.h"
 #include "gpio.h"
 #include "fdcanutil.h"
-
+#include "stdint.h";
+#include "stdbool.h";
 /* Private includes ----------------------------------------------------------*/
 
 
@@ -52,7 +53,7 @@ const char m_szCMD_STOPT[] = "stop";
 FDCAN_RxHeaderTypeDef m_stRxHeader;
 
 uint8_t m_au8RxData[64];
-uint8_t m_au8CanFdTrace[235]; //--> remove last only 0 termination for printf --> do not use printf use uart send
+uint8_t m_au8CanFdTrace[233]; //--> remove last only 0 termination for printf --> do not use printf use uart send
 
 VIRT_UART_HandleTypeDef huart0;
 VIRT_UART_HandleTypeDef huart1;
@@ -67,7 +68,7 @@ uint16_t VirtUart1ChannelRxSize = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-void CreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[64], uint8_t au8TraceData[234]);
+bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[64], uint8_t au8TraceData[233]);
 
 #ifdef __GNUC__
 /* With GCC, small printf (option LD Linker->Libraries->Small printf
@@ -160,10 +161,8 @@ uint8_t u8GetDataLength(uint32_t u32DataLengthCode) {
 	}
 }
 
-void CreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[64], uint8_t au8TraceData[234]) {
-	memset(au8TraceData, 32, 234);
-	au8TraceData[233] = '\r';
-	au8TraceData[232] = '\n';
+bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[64], uint8_t au8TraceData[233]) {
+	memset(au8TraceData, 0x00, sizeof(au8TraceData));
 
 	/*Field 0 - Message number: start at position 0, right align, max. 7 places*/
 	snprintf((void*)&(au8TraceData[0]), 8, "%07u", u32RxCount);
@@ -193,16 +192,17 @@ void CreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, u
 		LxUtilities_vUint8ToHex(au8RxData[i], (void*)&(au8TraceData[40 + 3*i]));
 	}
 
-	/*Line End 2 places*/
-	au8TraceData[232] = '\r';
-	au8TraceData[233] = '\n';
-
-	/* remove null termination from snprintf*/
-	for(uint32_t i = 0; i< 234; i++) {
+	/* replace null termination from snprintf with space*/
+	for(uint32_t i = 0; i < 233; i++) {
 		if(au8TraceData[i] == 0x00) {
 			au8TraceData[i] = 32;
 		}
 	}
+
+	/*Line End 1 places*/
+	au8TraceData[232] = '\n';
+
+	return true;
 }
 
 
@@ -306,11 +306,11 @@ int main(void)
       	if (HAL_FDCAN_GetRxMessage(&hfdcan2, FDCAN_RX_FIFO0, &m_stRxHeader, m_au8RxData) == HAL_OK) {
 
       		m_stRxHeader.RxTimestamp = HAL_GetTick();
-      		CreateCanFdTrace(&m_stRxHeader, u32RxCount, m_au8RxData, m_au8CanFdTrace);
+      		bCreateCanFdTrace(&m_stRxHeader, u32RxCount, m_au8RxData, m_au8CanFdTrace);
 
-      		HAL_UART_Transmit(&huart3, m_au8CanFdTrace, 234, 0xFFFF);
+      		HAL_UART_Transmit(&huart3, m_au8CanFdTrace, sizeof(m_au8CanFdTrace), 0xFFFF);
 
-  		    if (VIRT_UART_Transmit(&huart1, m_au8CanFdTrace, 234) != VIRT_UART_OK) {
+  		    if (VIRT_UART_Transmit(&huart1, m_au8CanFdTrace, sizeof(m_au8CanFdTrace)) != VIRT_UART_OK) {
   				BSP_LED_On(LED_RED);
   				} else  {
   				BSP_LED_Off(LED_RED);
