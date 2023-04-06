@@ -11,7 +11,8 @@
  *
  * <h2><center>&copy; COPYRIGHT 2021 blum</center></h2>
  **************************************************************************************************/
-#include "LxUtilities.h"
+//#include "LxUtilities.h"
+#include "fdcanutil.h"
 //#include "LxMath.h"
 
 /** \cond */
@@ -68,7 +69,7 @@
  *
  **************************************************************************************************/
 bool LxUtilities_bHexToUint8(const LxUtilities_Hex8Struct_t stHex8Input, uint8_t *const pu8Result) {
-    L0ASSERT_vERROR(pu8Result != NULL);
+  //  L0ASSERT_vERROR(pu8Result != NULL);
 
     uint8_t u8TempValue = 0u;
     bool bValidConversion = true;
@@ -114,7 +115,7 @@ bool LxUtilities_bHexToUint8(const LxUtilities_Hex8Struct_t stHex8Input, uint8_t
  *
  **************************************************************************************************/
 void LxUtilities_vUint8ToHex(uint8_t u8Input, LxUtilities_Hex8Struct_t *const pstHex8Result) {
-    L0ASSERT_vERROR(pstHex8Result != NULL);
+   // L0ASSERT_vERROR(pstHex8Result != NULL);
 
     uint8_t u8LowNibble = u8Input & 0x0Fu;
     uint8_t u8HighNibble = (u8Input >> 4u) & 0x0Fu;
@@ -151,8 +152,8 @@ void LxUtilities_vUint8ToHex(uint8_t u8Input, LxUtilities_Hex8Struct_t *const ps
  *
  **************************************************************************************************/
 bool LxUtilities_bHexToUint8Array(const LxUtilities_Hex8Struct_t astHex8Input[], uint8_t au8Result[], uint32_t u32ArrayLength) {
-    L0ASSERT_vERROR(astHex8Input != NULL);
-    L0ASSERT_vERROR(au8Result != NULL);
+   // L0ASSERT_vERROR(astHex8Input != NULL);
+   // L0ASSERT_vERROR(au8Result != NULL);
 
     uint32_t u32ValidCount = 0u;
 
@@ -188,8 +189,8 @@ bool LxUtilities_bHexToUint8Array(const LxUtilities_Hex8Struct_t astHex8Input[],
  *
  **************************************************************************************************/
 void LxUtilities_vUint8ArrayToHex(const uint8_t au8Input[], LxUtilities_Hex8Struct_t astHex8Result[], uint32_t u32ArrayLength) {
-    L0ASSERT_vERROR(au8Input != NULL);
-    L0ASSERT_vERROR(astHex8Result != NULL);
+   // L0ASSERT_vERROR(au8Input != NULL);
+   // L0ASSERT_vERROR(astHex8Result != NULL);
 
     for (uint32_t u32Index = 0u; u32Index < u32ArrayLength; u32Index++) {
         LxUtilities_vUint8ToHex(au8Input[u32Index], &(astHex8Result[u32Index]));
