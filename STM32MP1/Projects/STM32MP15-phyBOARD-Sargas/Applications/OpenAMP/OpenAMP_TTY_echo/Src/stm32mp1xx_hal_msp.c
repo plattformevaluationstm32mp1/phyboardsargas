@@ -67,7 +67,8 @@ void HAL_MspInit(void)
   /* USER CODE BEGIN MspInit 0 */
 
   /* USER CODE END MspInit 0 */
-
+	__HAL_RCC_SYSCFG_CLK_ENABLE();
+  
   /* System interrupt init*/
 
   /* USER CODE BEGIN MspInit 1 */
@@ -97,7 +98,7 @@ void HAL_IPCC_MspInit(IPCC_HandleTypeDef* hipcc)
   /* USER CODE BEGIN IPCC_MspInit 1 */
 
   /* USER CODE END IPCC_MspInit 1 */
-}
+  }
 
 }
 

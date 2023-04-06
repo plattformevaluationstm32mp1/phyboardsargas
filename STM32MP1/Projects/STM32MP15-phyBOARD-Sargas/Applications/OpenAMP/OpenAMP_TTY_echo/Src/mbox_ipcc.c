@@ -1,3 +1,4 @@
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    mbox_ipcc.c
@@ -5,19 +6,18 @@
   * @brief   This file provides code for the configuration
   *                      of the mailbox_ipcc_if.c MiddleWare.
   ******************************************************************************
-  * @attention
+    * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics. 
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the 
-  * License. You may obtain a copy of the License at:
-  *                       opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
-
+/* USER CODE END Header */
 /*
  * Channel direction and usage:
  *
@@ -39,15 +39,13 @@
 /* USER CODE BEGIN Define */
 
 /* USER CODE END Define */
-
-#define MASTER_CPU_ID       0
-#define REMOTE_CPU_ID       1
-#define IPCC_CPU_A7         MASTER_CPU_ID
-#define IPCC_CPU_M4         REMOTE_CPU_ID
-
-#define MBOX_NO_MSG           0
-#define MBOX_NEW_MSG          1
-#define MBOX_BUF_FREE         2
+#define MASTER_CPU_ID    0
+#define REMOTE_CPU_ID    1
+#define IPCC_CPU_A7      MASTER_CPU_ID
+#define IPCC_CPU_M4      REMOTE_CPU_ID
+#define MBOX_NO_MSG       0
+#define MBOX_NEW_MSG       1
+#define MBOX_BUF_FREE      2
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PFP */
@@ -67,7 +65,6 @@ uint32_t vring1_id = 1; /* used for channel 2 */
 
 void IPCC_channel1_callback(IPCC_HandleTypeDef * hipcc, uint32_t ChannelIndex, IPCC_CHANNELDirTypeDef ChannelDir);
 void IPCC_channel2_callback(IPCC_HandleTypeDef * hipcc, uint32_t ChannelIndex, IPCC_CHANNELDirTypeDef ChannelDir);
-
 
 /**
   * @brief  Initialize MAILBOX with IPCC peripheral
@@ -92,7 +89,6 @@ int MAILBOX_Init(void)
 	  OPENAMP_log_err("%s: ch_2 RX fail\n", __func__);
     return -1;
   }
-
 
   /* USER CODE BEGIN POST_MAILBOX_INIT */
 
@@ -145,7 +141,6 @@ int MAILBOX_Poll(struct virtio_device *vdev)
 
   return ret;
 }
-
 
 /**
   * @brief  Callback function called by OpenAMP MW to notify message processing
@@ -242,5 +237,3 @@ void IPCC_channel2_callback(IPCC_HandleTypeDef * hipcc,
 
   /* USER CODE END  POST_MAILBOX_CHANNEL2_CALLBACK */
 }
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

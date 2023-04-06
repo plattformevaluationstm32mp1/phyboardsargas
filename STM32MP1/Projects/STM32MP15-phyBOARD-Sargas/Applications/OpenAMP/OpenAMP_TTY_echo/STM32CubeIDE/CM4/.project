@@ -37,14 +37,34 @@
 			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/readme.txt</locationURI>
 		</link>
 		<link>
-			<name>Application/User/lock_resource.c</name>
-			<type>1</type>
-			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/Src/lock_resource.c</locationURI>
-		</link>
-		<link>
 			<name>Application/Startup/startup_stm32mp157cacx.s</name>
 			<type>1</type>
 			<locationURI>$%7BPARENT-0-PROJECT_LOC%7D/Application/Startup/startup_stm32mp157caax.s</locationURI>
+		</link>
+		<link>
+			<name>Application/User/fdcan.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/fdcan.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/fdcanutil.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/fdcanutil.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/gpio.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/gpio.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/ipcc.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/ipcc.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/lock_resource.c</name>
+			<type>1</type>
+			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/Src/lock_resource.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/main.c</name>
@@ -82,6 +102,11 @@
 			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/Src/stm32mp1xx_it.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/usart.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/usart.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/BSP/stm32mp15xx_phyboard-sargas.c</name>
 			<type>1</type>
 			<locationURI>$%7BPARENT-7-PROJECT_LOC%7D/Drivers/BSP/STM32MP15xx_phyBOARD-Sargas/stm32mp15xx_phyboard-sargas.c</locationURI>
@@ -110,6 +135,11 @@
 			<name>Drivers/STM32MP1xx_HAL_Driver/stm32mp1xx_hal_dma_ex.c</name>
 			<type>1</type>
 			<locationURI>$%7BPARENT-7-PROJECT_LOC%7D/Drivers/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_hal_dma_ex.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32MP1xx_HAL_Driver/stm32mp1xx_hal_fdcan.c</name>
+			<type>1</type>
+			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_hal_fdcan.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/STM32MP1xx_HAL_Driver/stm32mp1xx_hal_gpio.c</name>
@@ -155,6 +185,11 @@
 			<name>Drivers/STM32MP1xx_HAL_Driver/stm32mp1xx_hal_rcc_ex.c</name>
 			<type>1</type>
 			<locationURI>$%7BPARENT-7-PROJECT_LOC%7D/Drivers/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_hal_rcc_ex.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32MP1xx_HAL_Driver/stm32mp1xx_hal_uart_ex.c</name>
+			<type>1</type>
+			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32MP1xx_HAL_Driver/Src/stm32mp1xx_hal_uart_ex.c</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/OpenAMP/libmetal/device.c</name>

@@ -1,25 +1,26 @@
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    rsc_table.c
   * @author  MCD Application Team
-  * @brief   Ressource table
+  * @brief   Resource table
   *
   *   This file provides a default resource table requested by remote proc to
   *  load the elf file. It also allows to add debug trace using a shared buffer.
   *
   ******************************************************************************
-  * @attention
+    * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics. 
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                       opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
+/* USER CODE END Header */
 
 /** @addtogroup RSC_TABLE
   * @{
@@ -152,7 +153,6 @@ void resource_table_init(int RPMsgRole, void **table_ptr, int *length)
 	resource_table.vring1.align = VRING_ALIGNMENT;
 	resource_table.vring1.num = VRING_NUM_BUFFS;
 	resource_table.vring1.notifyid = VRING1_ID;
-
 
 	resource_table.vdev.type = RSC_VDEV;
 	resource_table.vdev.id = VIRTIO_ID_RPMSG_;

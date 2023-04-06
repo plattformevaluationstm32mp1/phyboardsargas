@@ -1,21 +1,22 @@
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file   openamp.h
   * @brief  Header for openamp applications
   * @author  MCD Application Team
   ******************************************************************************
-  * @attention
+   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics. 
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the 
-  * License. You may obtain a copy of the License at:
-  *                       opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
+/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __openamp_H
@@ -31,7 +32,6 @@
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
-
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
@@ -61,7 +61,6 @@
 
 /* USER CODE END EFP */
 
-
 /* Initialize the openamp framework*/
 int MX_OPENAMP_Init(int RPMsgRole, rpmsg_ns_bind_cb ns_bind_cb);
 
@@ -83,5 +82,3 @@ void OPENAMP_Wait_EndPointready(struct rpmsg_endpoint *rp_ept);
 }
 #endif
 #endif /*__openamp_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
