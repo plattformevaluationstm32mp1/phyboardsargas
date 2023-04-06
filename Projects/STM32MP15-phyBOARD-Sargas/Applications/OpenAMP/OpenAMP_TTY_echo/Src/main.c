@@ -28,8 +28,8 @@
 #include "usart.h"
 #include "gpio.h"
 #include "fdcanutil.h"
-#include "stdint.h";
-#include "stdbool.h";
+#include "stdint.h"
+#include "stdbool.h"
 /* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,13 +46,11 @@ const uint8_t m_au8CMD_STOP[] = {'s','t','o','p'};
 /* Private variables ---------------------------------------------------------*/
 bool m_bTxActive = false;
 
-
-
 //FDCAN_TxHeaderTypeDef TxHeader;
 FDCAN_RxHeaderTypeDef m_stRxHeader;
 
 uint8_t m_au8RxData[64];
-uint8_t m_au8CanFdTrace[233]; //--> remove last only 0 termination for printf --> do not use printf use uart send
+uint8_t m_au8CanFdTrace[233];
 
 VIRT_UART_HandleTypeDef huart0;
 VIRT_UART_HandleTypeDef huart1;
@@ -67,8 +65,7 @@ uint16_t VirtUart1ChannelRxSize = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount,
-        uint8_t au8RxData[64], uint8_t au8TraceData[233]);
+bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[64], uint8_t au8TraceData[233]);
 
 #ifdef __GNUC__
 /* With GCC, small printf (option LD Linker->Libraries->Small printf
@@ -86,8 +83,11 @@ bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount,
 
 void VIRT_UART0_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
 void VIRT_UART1_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
-/* USER CODE END PFP */
 
+/**
+ * @brief
+ * @retval bool
+ */
 uint8_t u8GetDataLength(uint32_t u32DataLengthCode) {
     uint8_t u8DataLength = 0;
     switch (u32DataLengthCode) {
@@ -159,12 +159,11 @@ uint8_t u8GetDataLength(uint32_t u32DataLengthCode) {
     }
 }
 
-
-
-
-bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount,
-        uint8_t au8RxData[64], uint8_t au8TraceData[233]) {
-    memset(au8TraceData, 0x00, sizeof(au8TraceData));
+/**
+ * @brief
+ * @retval bool
+ */
+bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[64], uint8_t au8TraceData[233]) {
 
     /*Field 0 - Message number: start at position 0, right align, max. 7 places*/
     snprintf((void*) &(au8TraceData[0]), 8, "%07u", u32RxCount);
@@ -208,13 +207,13 @@ bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount,
     return true;
 }
 
-
-
-
+/**
+ * @brief  This is the main application loop called from main periodically
+ * @retval void
+ */
 void vApplicationDo(void) {
 
     static uint32_t s_u32RxCount = 0;
-
 
     if(m_bTxActive == true) {
         BSP_LED_On(LED_GREEN);
@@ -224,40 +223,31 @@ void vApplicationDo(void) {
             memset(m_au8RxData, 0u, sizeof(m_au8RxData));
             memset(m_au8CanFdTrace, 0u, sizeof(m_au8CanFdTrace));
 
-            if (HAL_FDCAN_GetRxMessage(&hfdcan2, FDCAN_RX_FIFO0, &m_stRxHeader,
-                    m_au8RxData) == HAL_OK) {
+            if (HAL_FDCAN_GetRxMessage(&hfdcan2, FDCAN_RX_FIFO0, &m_stRxHeader, m_au8RxData) == HAL_OK) {
 
                 m_stRxHeader.RxTimestamp = HAL_GetTick();
                 bCreateCanFdTrace(&m_stRxHeader, s_u32RxCount, m_au8RxData,
                         m_au8CanFdTrace);
 
-                HAL_UART_Transmit(&huart3, m_au8CanFdTrace,
-                        sizeof(m_au8CanFdTrace), 0xFFFF);
+                HAL_UART_Transmit(&huart3, m_au8CanFdTrace, sizeof(m_au8CanFdTrace), 0xFFFF);
 
-                if (VIRT_UART_Transmit(&huart1, m_au8CanFdTrace,
-                        sizeof(m_au8CanFdTrace)) != VIRT_UART_OK) {
+                if (VIRT_UART_Transmit(&huart1, m_au8CanFdTrace, sizeof(m_au8CanFdTrace)) != VIRT_UART_OK) {
                     BSP_LED_On(LED_RED);
                 } else {
                     BSP_LED_Off(LED_RED);
                 }
-            } else {
-
             }
         }
         BSP_LED_Off(LED_GREEN);
     }
 
-
-
-
-
+    /* call the polling function to check the open AMP messages*/
     OPENAMP_check_for_message();
 
-    /* USER CODE END WHILE */
+    /* check messages on channel0 --> channel 0 is used for control*/
     if (VirtUart0RxMsg) {
         VirtUart0RxMsg = RESET;
-        VIRT_UART_Transmit(&huart0, VirtUart0ChannelBuffRx,
-                VirtUart0ChannelRxSize);
+        VIRT_UART_Transmit(&huart0, VirtUart0ChannelBuffRx, VirtUart0ChannelRxSize);
 
         if (memcmp(VirtUart0ChannelBuffRx, m_au8CMD_START, sizeof(m_au8CMD_START)) == 0) {
             m_bTxActive = true;
@@ -268,10 +258,10 @@ void vApplicationDo(void) {
         }
     }
 
+    /* check messages on channel1 --> channel 1 is used for data but for tests the control is also here active*/
     if (VirtUart1RxMsg) {
         VirtUart1RxMsg = RESET;
-        VIRT_UART_Transmit(&huart0, VirtUart1ChannelBuffRx,
-                VirtUart1ChannelBuffRx);
+        VIRT_UART_Transmit(&huart0, VirtUart1ChannelBuffRx, VirtUart1ChannelBuffRx);
 
         if (memcmp(VirtUart1ChannelBuffRx, m_au8CMD_START, sizeof(m_au8CMD_START)) == 0) {
             m_bTxActive = true;
@@ -281,35 +271,24 @@ void vApplicationDo(void) {
             m_bTxActive = false;
         }
     }
-
-
 }
-
-
-
-
 
 /**
  * @brief  The application entry point.
  * @retval int
  */
 int main(void) {
-    uint32_t u32Tickstart;
-
-    /* MCU Configuration--------------------------------------------------------*/
 
     /* Reset of all peripherals, Initialize the Systick. */
     HAL_Init();
 
-    /* USER CODE BEGIN Init */
     if (IS_ENGINEERING_BOOT_MODE()) {
         /* Configure the system clock */
         HAL_RCC_DeInit();
         SystemClock_Config();
     }
 
-    log_info(
-            "Cortex-M4 boot successful with STM32Cube FW version: v%ld.%ld.%ld \r\n",
+    log_info("Cortex-M4 boot successful with STM32Cube FW version: v%ld.%ld.%ld \r\n",
             ((HAL_GetHalVersion() >> 24) & 0x000000FF),
             ((HAL_GetHalVersion() >> 16) & 0x000000FF),
             ((HAL_GetHalVersion() >> 8) & 0x000000FF));
@@ -321,9 +300,8 @@ int main(void) {
     BSP_LED_Init(LED_RED);
     BSP_LED_Off(LED_GREEN);
     BSP_LED_Off(LED_RED);
-    /* USER CODE END Init */
 
-    /*HW semaphore Clock enable*/
+    /* HW semaphore Clock enable */
     __HAL_RCC_HSEM_CLK_ENABLE();
     /* IPCC initialisation */
     MX_IPCC_Init();
@@ -335,34 +313,29 @@ int main(void) {
         Error_Handler();
     }
 
-    /* USER CODE BEGIN 2 */
-    /*
-     * Create Virtual UART device
-     * defined by a rpmsg channel attached to the remote device
-     */
+    /* create virtual uart devices */
     log_info("Virtual UART0 OpenAMP-rpmsg channel creation\r\n");
     if (VIRT_UART_Init(&huart0) != VIRT_UART_OK) {
         log_err("VIRT_UART_Init UART0 failed.\r\n");
         Error_Handler();
     }
-
     log_info("Virtual UART1 OpenAMP-rpmsg channel creation\r\n");
     if (VIRT_UART_Init(&huart1) != VIRT_UART_OK) {
         log_err("VIRT_UART_Init UART1 failed.\r\n");
         Error_Handler();
     }
 
-    /*Need to register callback for message reception by channels*/
+    /* register virtual uart callbacks */
     if (VIRT_UART_RegisterCallback(&huart0, VIRT_UART_RXCPLT_CB_ID,
-            VIRT_UART0_RxCpltCallback) != VIRT_UART_OK) {
+        VIRT_UART0_RxCpltCallback) != VIRT_UART_OK) {
         Error_Handler();
     }
     if (VIRT_UART_RegisterCallback(&huart1, VIRT_UART_RXCPLT_CB_ID,
-            VIRT_UART1_RxCpltCallback) != VIRT_UART_OK) {
+        VIRT_UART1_RxCpltCallback) != VIRT_UART_OK) {
         Error_Handler();
     }
 
-    uint32_t u32RxCount = 0;
+    /* main application loop */
     while (1) {
         vApplicationDo();
     }
@@ -480,26 +453,20 @@ void SystemClock_Config(void) {
 
 void VIRT_UART0_RxCpltCallback(VIRT_UART_HandleTypeDef *huart) {
 
-    log_info("Msg received on VIRTUAL UART0 channel:  %s \n\r",
-            (char* ) huart->pRxBuffPtr);
+    log_info("Msg received on VIRTUAL UART0 channel:  %s \n\r", (char* ) huart->pRxBuffPtr);
 
     /* copy received msg in a variable to sent it back to master processor in main infinite loop*/
-    VirtUart0ChannelRxSize =
-            huart->RxXferSize < MAX_BUFFER_SIZE ?
-                    huart->RxXferSize : MAX_BUFFER_SIZE - 1;
+    VirtUart0ChannelRxSize = huart->RxXferSize < MAX_BUFFER_SIZE ? huart->RxXferSize : MAX_BUFFER_SIZE - 1;
     memcpy(VirtUart0ChannelBuffRx, huart->pRxBuffPtr, VirtUart0ChannelRxSize);
     VirtUart0RxMsg = SET;
 }
 
 void VIRT_UART1_RxCpltCallback(VIRT_UART_HandleTypeDef *huart) {
 
-    log_info("Msg received on VIRTUAL UART1 channel:  %s \n\r",
-            (char* ) huart->pRxBuffPtr);
+    log_info("Msg received on VIRTUAL UART1 channel:  %s \n\r", (char* ) huart->pRxBuffPtr);
 
     /* copy received msg in a variable to sent it back to master processor in main infinite loop*/
-    VirtUart1ChannelRxSize =
-            huart->RxXferSize < MAX_BUFFER_SIZE ?
-                    huart->RxXferSize : MAX_BUFFER_SIZE - 1;
+    VirtUart1ChannelRxSize = huart->RxXferSize < MAX_BUFFER_SIZE ? huart->RxXferSize : MAX_BUFFER_SIZE - 1;
     memcpy(VirtUart1ChannelBuffRx, huart->pRxBuffPtr, VirtUart1ChannelRxSize);
     VirtUart1RxMsg = SET;
 }
