@@ -27,12 +27,15 @@
 //#include "openamp.h"
 #include "usart.h"
 #include "gpio.h"
-#include "fdcanutil.h"
+//#include "fdcanutil.h"
 #include "stdint.h"
 #include "stdbool.h"
 /* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
+typedef struct {
+    uint8_t u8Digits[2u];
+} LxUtilities_Hex8Struct_t;
 
 /* Private define ------------------------------------------------------------*/
 #define MAX_BUFFER_SIZE RPMSG_BUFFER_SIZE
@@ -83,6 +86,20 @@ bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, 
 
 void VIRT_UART0_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
 void VIRT_UART1_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
+
+/**
+ * @brief Converts a uint8_t value into a hex8 value.
+ * @retval bool
+ */
+void LxUtilities_vUint8ToHex(uint8_t u8Input, LxUtilities_Hex8Struct_t *const pstHex8Result) {
+
+    uint8_t u8LowNibble = u8Input & 0x0Fu;
+    uint8_t u8HighNibble = (u8Input >> 4u) & 0x0Fu;
+
+    ((uint8_t *)pstHex8Result->u8Digits)[0u] = (u8HighNibble < 10u) ? (48u + u8HighNibble) : (55u + u8HighNibble);
+    ((uint8_t *)pstHex8Result->u8Digits)[1u] = (u8LowNibble < 10u) ? (48u + u8LowNibble) : (55u + u8LowNibble);
+}
+
 
 /**
  * @brief

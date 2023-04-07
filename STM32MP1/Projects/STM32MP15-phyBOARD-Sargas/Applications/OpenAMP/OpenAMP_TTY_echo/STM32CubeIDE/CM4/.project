@@ -47,11 +47,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Src/fdcan.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/fdcanutil.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Src/fdcanutil.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/gpio.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Src/gpio.c</locationURI>
