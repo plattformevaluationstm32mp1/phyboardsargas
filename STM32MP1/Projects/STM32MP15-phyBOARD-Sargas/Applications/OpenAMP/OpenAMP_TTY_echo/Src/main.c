@@ -32,6 +32,8 @@ typedef struct {
 
 /* Private define ------------------------------------------------------------*/
 #define MAX_BUFFER_SIZE RPMSG_BUFFER_SIZE
+#define m_u32RXDATALENGTH ((uint32_t)64)
+#define m_u32CANFDTRACELENGTH ((uint32_t)233)
 
 /* Private macro -------------------------------------------------------------*/
 
@@ -43,8 +45,8 @@ const uint8_t m_au8CMD_STOP[] = {'s','t','o','p'};
 bool m_bTxActive = false;
 FDCAN_RxHeaderTypeDef m_stRxHeader;
 
-uint8_t m_au8RxData[64];
-uint8_t m_au8CanFdTrace[233];
+uint8_t m_au8RxData[m_u32RXDATALENGTH];
+uint8_t m_au8CanFdTrace[m_u32CANFDTRACELENGTH];
 
 VIRT_UART_HandleTypeDef huart0;
 VIRT_UART_HandleTypeDef huart1;
@@ -60,7 +62,7 @@ uint16_t VirtUart1ChannelRxSize = 0;
 /* Private function prototypes -----------------------------------------------*/
 void vUint8ToHex(uint8_t u8Input, LxUtilities_Hex8Struct_t *const pstHex8Result);
 uint8_t u8GetCanHeaderDataLength(uint32_t u32DataLengthCode);
-bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[64], uint8_t au8TraceData[233]);
+bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[], uint8_t au8TraceData[]);
 void vApplicationDo(void);
 void SystemClock_Config(void);
 void VIRT_UART0_RxCpltCallback(VIRT_UART_HandleTypeDef *huart);
@@ -81,8 +83,8 @@ void vUint8ToHex(uint8_t u8Input, LxUtilities_Hex8Struct_t *const pstHex8Result)
 }
 
 /**
- * @brief
- * @retval data length
+ * @brief  converts the coded header data length in a uint8_t value.
+ * @retval data length of the CAN frame as uint8_t.
  */
 uint8_t u8GetCanHeaderDataLength(uint32_t u32DataLengthCode) {
     uint8_t u8DataLength = 0;
@@ -156,10 +158,10 @@ uint8_t u8GetCanHeaderDataLength(uint32_t u32DataLengthCode) {
 }
 
 /**
- * @brief
- * @retval bool
+ * @brief  Create readable a ascii string from the raw can data in the same format like a can trace output.
+ * @retval false in case of a converting error.
  */
-bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[64], uint8_t au8TraceData[233]) {
+bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, uint8_t au8RxData[], uint8_t au8TraceData[]) {
 
     /*Field 0 - Message number: start at position 0, right align, max. 7 places*/
     snprintf((void*) &(au8TraceData[0]), 8, "%07u", u32RxCount);
@@ -184,20 +186,20 @@ bool bCreateCanFdTrace(FDCAN_RxHeaderTypeDef *pstRxHeader, uint32_t u32RxCount, 
     snprintf((void*) &(au8TraceData[37]), 3, "%02u", u8GetCanHeaderDataLength(pstRxHeader->DataLength));
 
     /*Field 6 - Data: start at position 41, 192 places */
-    for (int i = 0; i < 64; i++) {
+    for (int i = 0; i < m_u32RXDATALENGTH; i++) {
         vUint8ToHex(au8RxData[i],
         (void*) &(au8TraceData[40 + 3 * i]));
     }
 
     /* replace null termination from snprintf with space*/
-    for (uint32_t i = 0; i < 233; i++) {
+    for (uint32_t i = 0; i < m_u32CANFDTRACELENGTH; i++) {
         if (au8TraceData[i] == 0x00) {
             au8TraceData[i] = 32;
         }
     }
 
     /*Line End 1 places*/
-    au8TraceData[232] = '\n';
+    au8TraceData[m_u32CANFDTRACELENGTH - 1] = '\n';
 
     return true;
 }
@@ -269,7 +271,7 @@ void vApplicationDo(void) {
 }
 
 /**
- * @brief  The application entry point.
+ * @brief  This is the application entry point
  * @retval int
  */
 int main(void) {
@@ -300,10 +302,10 @@ int main(void) {
     __HAL_RCC_HSEM_CLK_ENABLE();
     /* IPCC initialisation */
     MX_IPCC_Init();
-    /* OpenAmp initialisation ---------------------------------*/
+    /* OpenAmp initialisation */
     MX_OPENAMP_Init(RPMSG_REMOTE, NULL);
 
-    /*##-2 Start FDCAN controller (continuous listening CAN bus) ##############*/
+    /* Start FDCAN controller (continuous listening CAN bus) */
     if (HAL_FDCAN_Start(&hfdcan2) != HAL_OK) {
         Error_Handler();
     }
@@ -330,7 +332,7 @@ int main(void) {
         Error_Handler();
     }
 
-    /* main application loop */
+    /* do the main application loop */
     while (1) {
         vApplicationDo();
     }
@@ -447,7 +449,7 @@ void SystemClock_Config(void) {
 }
 
 /**
- * @brief  Virtual Uart0 callback function . Is called when a message from OpenAMP is received.
+ * @brief  Virtual Uart0 callback function. This is called when a message from OpenAMP is received.
  *         Set the flag VirtUart0RxMsg
  * @retval None
  */
@@ -462,7 +464,7 @@ void VIRT_UART0_RxCpltCallback(VIRT_UART_HandleTypeDef *huart) {
 }
 
 /**
- * @brief  Virtual Uart1 callback function . Is called when a message from OpenAMP is received.
+ * @brief  Virtual Uart1 callback function. This is called when a message from OpenAMP is received.
  *         Set the flag VirtUart1RxMsg
  * @retval None
  */
@@ -476,11 +478,8 @@ void VIRT_UART1_RxCpltCallback(VIRT_UART_HandleTypeDef *huart) {
     VirtUart1RxMsg = SET;
 }
 
-
 /**
  * @brief  This function is executed in case of error occurrence.
- * @param  file: The file name as string.
- * @param  line: The line in file as a number.
  * @retval None
  */
 void Error_Handler(void) {
@@ -491,7 +490,6 @@ void Error_Handler(void) {
         BSP_LED_Toggle(LED_RED);
         HAL_Delay(50);
     }
-
 }
 
 #ifdef  USE_FULL_ASSERT
@@ -509,5 +507,3 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 }
 #endif /* USE_FULL_ASSERT */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
