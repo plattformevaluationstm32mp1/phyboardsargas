@@ -10,3 +10,4 @@
 | OpenAMP_open-amp                | BSD-3-Clause         | Xilinx Inc. and Contributors |
 | ST Projects                     | BSD-3-Clause         | STMicroelectronics |
 | ResMgr_Utilities                | BSD-3-Clause         | STMicroelectronics |
+| main.c                          | BSD-3-Clause         | Thomas Engler |
